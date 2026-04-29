@@ -62,7 +62,7 @@ document.getElementById('manifest-placeholder').href = URL.createObjectURL(blob)
   --fh:'Orbitron',monospace;--fb:'Rajdhani',sans-serif;--fm:'Space Mono',monospace;
   --r:12px;--tr:all 0.3s cubic-bezier(0.4,0,0.2,1);
 }
-[data-theme="light"]{--bg:#f0f4ff;--bg2:#e8eeff;--bg3:#dde5ff;--card:#fff;--border:#c0caf5;--accent:#7c3aed;--accent2:#db2777;--accent3:#5b21b6;--gold:#d97706;--text:#1e1b4b;--text2:#4c4f8f;--text3:#8888bb;--shadow:rgba(124,58,237,0.15);--glow:0 0 20px rgba(124,58,237,0.2);}
+[data-theme="light"]{--bg:#ffffff;--bg2:#f8f8f8;--bg3:#f0f0f0;--card:#ffffff;--border:#e0e0e0;--accent:#7c3aed;--accent2:#db2777;--accent3:#5b21b6;--gold:#d97706;--text:#111111;--text2:#555555;--text3:#aaaaaa;--shadow:rgba(124,58,237,0.15);--glow:0 0 20px rgba(124,58,237,0.2);}
 [data-theme="ocean"]{--bg:#001a2c;--bg2:#002a42;--bg3:#003a5c;--card:#004a72;--border:#0077aa;--accent:#00d4ff;--accent2:#ff6b35;--accent3:#00a8cc;--gold:#ffd700;--text:#e0f7ff;--text2:#80d4f0;--text3:#3399bb;--shadow:rgba(0,212,255,0.2);--glow:0 0 25px rgba(0,212,255,0.4);}
 [data-theme="forest"]{--bg:#0a1a0a;--bg2:#0f2a0f;--bg3:#143614;--card:#1a4a1a;--border:#2a7a2a;--accent:#39ff14;--accent2:#ff6b35;--accent3:#00c853;--gold:#ffd700;--text:#e0ffe0;--text2:#80cc80;--text3:#4a8a4a;--shadow:rgba(57,255,20,0.15);--glow:0 0 20px rgba(57,255,20,0.3);}
 [data-theme="sunset"]{--bg:#1a0a00;--bg2:#2a1200;--bg3:#3d1a00;--card:#4a2200;--border:#8b4513;--accent:#ff6b35;--accent2:#ff1744;--accent3:#ff9500;--gold:#ffd700;--text:#fff3e0;--text2:#ffcc80;--text3:#ff8a65;--shadow:rgba(255,107,53,0.2);--glow:0 0 25px rgba(255,107,53,0.4);}
@@ -87,7 +87,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--text);min-height:100
 .app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;}
 
 /* --- SCREENS --- */
-.sc{display:none;flex-direction:column;flex:1;padding-bottom:72px;animation:scIn .35s ease;}
+.sc{display:none;flex-direction:column;flex:1;padding-bottom:110px;animation:scIn .35s ease;}
 .sc.on{display:flex;}
 @keyframes scIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 
@@ -101,13 +101,36 @@ body{font-family:var(--fb);background:var(--bg);color:var(--text);min-height:100
 .ndot.on{display:block;}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
-/* --- BOTTOM NAV --- */
-.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--bg2);border-top:1px solid var(--border);display:flex;z-index:200;padding:5px 0 max(14px,env(safe-area-inset-bottom));}
-.ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;transition:var(--tr);padding:4px 0;}
-.ni svg,.ni span{transition:var(--tr);}
-.ni span{font-family:var(--fb);font-size:9px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text3);}
-.ni.on svg{filter:drop-shadow(0 0 5px var(--accent));}
-.ni.on span{color:var(--accent);}
+/* --- BOTTOM NAV PILL FLOTTANT --- */
+.bnav{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  width:auto;
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:60px;
+  display:flex;z-index:200;
+  padding:7px 10px;
+  gap:2px;
+  box-shadow:0 8px 32px rgba(0,0,0,0.4),0 2px 8px rgba(0,0,0,0.25);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  transition:opacity 0.5s ease, transform 0.5s ease;
+}
+.bnav.hide{
+  opacity:0;
+  transform:translateX(-50%) translateY(16px);
+  pointer-events:none;
+}
+.ni{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  cursor:pointer;transition:all 0.3s ease;padding:7px 16px;
+  border-radius:50px;min-width:68px;
+}
+.ni.on{background:var(--accent);box-shadow:0 4px 16px var(--shadow);}
+.ni svg,.ni span{transition:all 0.3s ease;}
+.ni span{font-family:var(--fb);font-size:8px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);}
+.ni.on span{color:var(--bg);}
+.ni.on svg{filter:none;}
 
 /* --- BUTTONS --- */
 .btn{display:flex;align-items:center;justify-content:center;gap:9px;padding:14px 22px;border-radius:var(--r);border:none;cursor:pointer;font-family:var(--fb);font-size:14px;font-weight:700;letter-spacing:1px;transition:var(--tr);text-transform:uppercase;position:relative;overflow:hidden;}
@@ -596,9 +619,9 @@ body{font-family:var(--fb);background:var(--bg);color:var(--text);min-height:100
 
   <!-- BOTTOM NAV (4 items) -->
   <div class="bnav">
-    <div class="ni on" id="ni-home" onclick="navTo('home')">
-      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-      <span>ACCUEIL</span>
+    <div class="ni on" id="ni-home" onclick="navTo('home')" style="background:var(--accent);">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="var(--bg)" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span style="color:var(--bg);">ACCUEIL</span>
     </div>
     <div class="ni" id="ni-salon" onclick="navTo('salon')">
       <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -681,6 +704,8 @@ window.addEventListener('load', () => {
   initFB();
   showScores();
   setTimeout(() => document.getElementById('loader').classList.add('out'), 2300);
+  // Start nav auto-hide timer
+  setTimeout(() => showNav(), 100);
 });
 
 /* ---- FIREBASE ---- */
@@ -709,14 +734,48 @@ function navTo(id) {
   ['home','salon','scores','settings'].forEach(k => {
     const n=document.getElementById('ni-'+k); if(!n) return;
     n.classList.remove('on');
-    n.querySelectorAll('svg').forEach(s=>s.setAttribute('stroke','var(--text3)'));
-    n.querySelectorAll('span').forEach(s=>s.style.color='');
+    n.style.background='';
+    n.style.boxShadow='';
+    n.querySelectorAll('svg').forEach(s=>{ s.setAttribute('stroke','var(--text3)'); });
+    n.querySelectorAll('span').forEach(s=>{ s.style.color=''; });
   });
   const n=document.getElementById('ni-'+id);
-  if(n){ n.classList.add('on'); n.querySelectorAll('svg').forEach(s=>s.setAttribute('stroke','var(--accent)')); }
+  if(n){
+    n.classList.add('on');
+    n.querySelectorAll('svg').forEach(s=>{ s.setAttribute('stroke','#fff'); });
+    n.querySelectorAll('span').forEach(s=>{ s.style.color='#fff'; });
+  }
   if(id==='scores') showScores();
   showSc(id);
+  showNav();
 }
+
+/* ---- PILL NAV AUTO-HIDE ---- */
+let navTimer = null;
+let navVisible = true;
+
+function showNav() {
+  const nav = document.querySelector('.bnav');
+  if(!nav) return;
+  nav.classList.remove('hide');
+  navVisible = true;
+  clearTimeout(navTimer);
+  navTimer = setTimeout(() => {
+    nav.classList.add('hide');
+    navVisible = false;
+  }, 60000); // 1 minute
+}
+
+function hideNav() {
+  const nav = document.querySelector('.bnav');
+  if(!nav) return;
+  nav.classList.add('hide');
+  navVisible = false;
+}
+
+// Show nav on tap anywhere
+document.addEventListener('touchstart', () => showNav(), {passive:true});
+document.addEventListener('click', () => showNav());
 
 function showSc(id) {
   document.querySelectorAll('.sc').forEach(s=>{s.classList.remove('on');s.style.display='';});
