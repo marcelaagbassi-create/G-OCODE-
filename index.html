@@ -34,6 +34,8 @@
 <!-- FIREBASE SDK (compat) -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
 
 <!-- GOOGLE FONTS -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -330,6 +332,56 @@ body{font-family:var(--fb);background:var(--bg);color:var(--text);min-height:100
 </div>
 
 <div class="app">
+
+  <!-- ===== AUTH SCREEN ===== -->
+  <div class="sc" id="sc-auth" style="padding-bottom:0;background:var(--bg);min-height:100vh;align-items:center;justify-content:center;">
+    <div style="padding:40px 24px;text-align:center;width:100%;max-width:380px;margin:0 auto;">
+      <!-- Logo -->
+      <svg width="80" height="80" viewBox="0 0 100 100" style="margin:0 auto 16px;display:block;filter:drop-shadow(0 0 12px var(--accent));">
+        <circle cx="50" cy="50" r="44" fill="none" stroke="var(--accent)" stroke-width="3"/>
+        <ellipse cx="50" cy="50" rx="22" ry="44" fill="none" stroke="var(--accent)" stroke-width="2"/>
+        <ellipse cx="50" cy="50" rx="44" ry="15" fill="none" stroke="var(--accent)" stroke-width="2"/>
+        <path d="M28 36 Q36 29 45 34 Q52 37 48 46 Q43 53 36 49Z" fill="var(--accent)" fill-opacity=".6"/>
+        <path d="M57 38 Q65 32 73 37 Q79 42 74 51 Q68 57 60 52Z" fill="var(--accent)" fill-opacity=".4"/>
+        <path d="M32 56 Q41 52 45 62 Q43 70 37 67Z" fill="var(--accent2)" fill-opacity=".6"/>
+      </svg>
+      <div style="font-family:var(--fh);font-size:32px;font-weight:900;color:var(--accent);letter-spacing:3px;text-shadow:var(--glow);">GÉOCODE</div>
+      <div style="font-size:11px;color:var(--text2);letter-spacing:2px;text-transform:uppercase;margin-top:4px;margin-bottom:32px;">Devine · Élimine · Domine</div>
+
+      <!-- Connexion Google -->
+      <button class="btn" onclick="signInGoogle()" style="width:100%;background:#fff;color:#333;border:1px solid #ddd;margin-bottom:10px;gap:12px;">
+        <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+        Continuer avec Google
+      </button>
+
+      <!-- Connexion Email -->
+      <button class="btn bs" onclick="showEmailAuth()" style="width:100%;margin-bottom:10px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 8l10 6 10-6"/></svg>
+        Continuer avec Email
+      </button>
+
+      <!-- Connexion Téléphone -->
+      <button class="btn bs" onclick="showPhoneAuth()" style="width:100%;margin-bottom:10px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg>
+        Continuer avec Téléphone
+      </button>
+
+      <!-- Play Games -->
+      <button class="btn bs" onclick="signInPlayGames()" style="width:100%;margin-bottom:24px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Play Games (Android)
+      </button>
+
+      <!-- Jouer sans compte -->
+      <button onclick="playAnonymous()" style="background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;text-decoration:underline;font-family:var(--fb);">
+        Jouer sans compte →
+      </button>
+
+      <!-- reCAPTCHA container -->
+      <div id="recaptcha-container" style="margin-top:12px;display:flex;justify-content:center;"></div>
+    </div>
+  </div>
+
   <!-- HEADER -->
   <div class="hdr">
     <div>
@@ -369,10 +421,22 @@ body{font-family:var(--fb);background:var(--bg);color:var(--text);min-height:100
     <div class="pc" style="margin-bottom:11px;">
       <div class="stitle">🎮 Mode Solo</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;">
-        <div class="mc" onclick="startSolo('facile')"><div class="mc-icon">🌍</div><div class="mc-t">DÉCOUVERTE</div><div class="mc-d">2 bots · Facile</div></div>
-        <div class="mc" onclick="startSolo('normal')"><div class="mc-icon">🗺️</div><div class="mc-t">EXPLORATEUR</div><div class="mc-d">3 bots · Normal</div></div>
-        <div class="mc" onclick="startSolo('difficile')"><div class="mc-icon">⚔️</div><div class="mc-t">CONQUÉRANT</div><div class="mc-d">4 bots · Difficile</div></div>
-        <div class="mc" onclick="startSolo('extreme')"><div class="mc-icon">💀</div><div class="mc-t">EXTRÊME</div><div class="mc-d">5 bots · Impossible</div></div>
+        <div class="mc" onclick="startSolo('facile')">
+          <div class="mc-icon"><svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="none" stroke="var(--accent)" stroke-width="2"/><ellipse cx="16" cy="16" rx="7" ry="14" fill="none" stroke="var(--accent)" stroke-width="1.5"/><ellipse cx="16" cy="16" rx="14" ry="5" fill="none" stroke="var(--accent)" stroke-width="1.5"/><path d="M8 11 Q12 9 16 11 Q19 12 18 16 Q16 19 12 17Z" fill="var(--accent)" fill-opacity=".6"/><path d="M19 12 Q23 10 26 12 Q28 14 26 18 Q23 20 20 17Z" fill="var(--accent)" fill-opacity=".5"/></svg></div>
+          <div class="mc-t">DÉCOUVERTE</div><div class="mc-d">2 bots · Facile</div>
+        </div>
+        <div class="mc" onclick="startSolo('normal')">
+          <div class="mc-icon"><svg width="32" height="32" viewBox="0 0 32 32"><rect x="3" y="8" width="26" height="18" rx="2" fill="none" stroke="var(--accent)" stroke-width="2"/><path d="M3 13h26M10 8v18M22 8v18" stroke="var(--accent)" stroke-width="1.5" fill="none"/><circle cx="6.5" cy="10.5" r="1" fill="var(--accent)"/><path d="M12 11h8M12 16h6M12 21h10" stroke="var(--accent)" stroke-width="1.5"/></svg></div>
+          <div class="mc-t">EXPLORATEUR</div><div class="mc-d">3 bots · Normal</div>
+        </div>
+        <div class="mc" onclick="startSolo('difficile')">
+          <div class="mc-icon"><svg width="32" height="32" viewBox="0 0 32 32"><path d="M8 26 L16 4 L24 26" stroke="var(--accent2)" stroke-width="2" fill="none"/><path d="M10 20h12" stroke="var(--accent2)" stroke-width="2"/><path d="M5 8 L16 4 L27 8" stroke="var(--accent2)" stroke-width="1.5" fill="none"/><circle cx="16" cy="4" r="2" fill="var(--accent2)"/></svg></div>
+          <div class="mc-t">CONQUÉRANT</div><div class="mc-d">4 bots · Difficile</div>
+        </div>
+        <div class="mc" onclick="startSolo('extreme')">
+          <div class="mc-icon"><svg width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="12" r="7" fill="none" stroke="var(--danger)" stroke-width="2"/><circle cx="11" cy="10" r="2" fill="var(--danger)"/><circle cx="21" cy="10" r="2" fill="var(--danger)"/><path d="M11 16 Q16 20 21 16" stroke="var(--danger)" stroke-width="2" fill="none"/><rect x="10" y="19" width="12" height="3" rx="1.5" fill="var(--danger)" fill-opacity=".7"/><rect x="11" y="22" width="3" height="5" rx="1" fill="var(--danger)" fill-opacity=".7"/><rect x="18" y="22" width="3" height="5" rx="1" fill="var(--danger)" fill-opacity=".7"/></svg></div>
+          <div class="mc-t">EXTRÊME</div><div class="mc-d">5 bots · Impossible</div>
+        </div>
       </div>
     </div>
 
@@ -461,16 +525,43 @@ body{font-family:var(--fb);background:var(--bg);color:var(--text);min-height:100
       <!-- Profil joueur connecté -->
       <div class="card cglow" style="margin-bottom:14px;background:linear-gradient(135deg,var(--card),var(--bg3));border-color:var(--accent);">
         <div style="display:flex;align-items:center;gap:14px;">
-          <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent3));display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:20px;font-weight:900;color:var(--bg);flex-shrink:0;" id="profile-avatar">J</div>
+          <!-- Avatar cliquable -->
+          <div style="position:relative;flex-shrink:0;" onclick="changeProfilePhoto()">
+            <div id="profile-avatar" style="width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent3));display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:22px;font-weight:900;color:var(--bg);overflow:hidden;border:2px solid var(--accent);cursor:pointer;">
+              <span id="profile-avatar-letter">J</span>
+              <img id="profile-avatar-img" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:50%;">
+            </div>
+            <!-- Icône appareil photo -->
+            <div style="position:absolute;bottom:-2px;right:-2px;width:22px;height:22px;border-radius:50%;background:var(--accent2);display:flex;align-items:center;justify-content:center;border:2px solid var(--bg2);">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            </div>
+            <input type="file" id="photo-input" accept="image/*" style="display:none;" onchange="handlePhotoUpload(event)">
+          </div>
           <div style="flex:1;">
-            <div style="font-family:var(--fh);font-size:16px;font-weight:900;color:var(--accent);" id="profile-name">JOUEUR</div>
-            <div style="font-size:11px;color:var(--text2);margin-top:2px;">🟢 En ligne</div>
-            <div style="display:flex;gap:10px;margin-top:6px;">
-              <span style="font-size:11px;color:var(--text2);">🏆 <strong style="color:var(--gold);" id="profile-wins">0</strong> victoires</span>
-              <span style="font-size:11px;color:var(--text2);">⚔️ <strong style="color:var(--accent2);" id="profile-elims">0</strong> éliminés</span>
+            <div style="font-family:var(--fh);font-size:15px;font-weight:900;color:var(--accent);" id="profile-name">JOUEUR</div>
+            <div id="profile-auth-status" style="font-size:10px;color:var(--success);margin-top:2px;display:flex;align-items:center;gap:4px;">
+              <div style="width:6px;height:6px;border-radius:50%;background:var(--success);"></div>
+              En ligne
+            </div>
+            <div style="display:flex;gap:10px;margin-top:5px;">
+              <span style="font-size:11px;color:var(--text2);">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="var(--gold)" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                <strong style="color:var(--gold);" id="profile-wins">0</strong> victoires
+              </span>
+              <span style="font-size:11px;color:var(--text2);">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--accent2)" stroke-width="2"><path d="M8 26 L16 4 L24 26"/><path d="M10 20h12"/></svg>
+                <strong style="color:var(--accent2);" id="profile-elims">0</strong> éliminés
+              </span>
             </div>
           </div>
-          <button class="btn bs bxs" onclick="chgName()">✏️</button>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <button class="btn bs bxs" onclick="chgName()" title="Modifier pseudo">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="btn bd bxs" onclick="signOut()" title="Déconnexion">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -591,8 +682,12 @@ body{font-family:var(--fb);background:var(--bg);color:var(--text);min-height:100
     <div class="sa" id="gscroll" style="flex:1;">
       <div class="mycc"><div class="myclb">🔒 Mon pays secret</div><div class="mycn" id="mycd"></div><div class="lrow" id="mlrow"></div></div>
       <div class="elimbanner" id="ebanner">
-        <div style="font-family:var(--fh);font-size:14px;font-weight:900;color:var(--danger);">💀 TU AS ÉTÉ ÉLIMINÉ</div>
-        <div style="font-size:11px;color:var(--text2);margin-top:3px;">Ton pays a été deviné ! Attends la prochaine partie pour rejouer.</div>
+        <div style="display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:4px;">
+          <svg width="20" height="20" viewBox="0 0 32 32"><circle cx="16" cy="12" r="7" fill="none" stroke="var(--danger)" stroke-width="2"/><circle cx="11" cy="10" r="2" fill="var(--danger)"/><circle cx="21" cy="10" r="2" fill="var(--danger)"/><path d="M11 16 Q16 20 21 16" stroke="var(--danger)" stroke-width="2" fill="none"/><rect x="10" y="19" width="12" height="3" rx="1.5" fill="var(--danger)" fill-opacity=".7"/><rect x="11" y="22" width="3" height="5" rx="1" fill="var(--danger)" fill-opacity=".7"/><rect x="18" y="22" width="3" height="5" rx="1" fill="var(--danger)" fill-opacity=".7"/></svg>
+          <div style="font-family:var(--fh);font-size:14px;font-weight:900;color:var(--danger);">TU AS ÉTÉ ÉLIMINÉ</div>
+        </div>
+        <div style="font-size:11px;color:var(--text2);">Ton pays a été deviné ! Tu peux continuer à observer.</div>
+        <button class="btn bd bxs" style="margin-top:8px;" onclick="resetEliminatedState()">Nouvelle partie →</button>
       </div>
       <div class="opsc" id="opsc"><div class="stitle">👥 Adversaires</div></div>
       <div style="padding:0 18px;margin-top:5px;">
@@ -786,27 +881,254 @@ let G = {
 window.addEventListener('load', () => {
   loadTheme(); loadStats();
   document.getElementById('set-name').textContent = G.name;
+  // Charger la photo sauvegardée
+  const savedPhoto = localStorage.getItem('gc-photo');
+  if(savedPhoto) { G.photoURL = savedPhoto; setTimeout(()=>applyProfilePhoto(savedPhoto),500); }
   initFB();
   showScores();
   setTimeout(() => document.getElementById('loader').classList.add('out'), 2300);
   setTimeout(() => showNav(), 100);
-  // Aller en ligne après connexion Firebase (avec délai)
   setTimeout(() => { if(fbOK) goOnline(); }, 3000);
+  // Demander permission notifications dès le départ
+  if('Notification' in window && Notification.permission === 'default') {
+    setTimeout(() => Notification.requestPermission(), 5000);
+  }
 });
 
 /* ---- FIREBASE ---- */
+let auth = null;
+let currentUser = null;
+
 function initFB() {
   try {
     if (!firebase.apps.length) firebase.initializeApp(FB_CFG);
     db = firebase.database();
+    auth = firebase.auth();
     db.ref('.info/connected').on('value', s => {
       fbOK = s.val() === true;
       updFB();
     });
+    // Écouter l'état d'authentification
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        G.name = user.displayName || user.email?.split('@')[0] || 'JOUEUR';
+        G.name = G.name.toUpperCase().slice(0,16);
+        localStorage.setItem('gc-name', G.name);
+        if(user.photoURL) {
+          G.photoURL = user.photoURL;
+          applyProfilePhoto(user.photoURL);
+        }
+        document.getElementById('set-name').textContent = G.name;
+        updateProfile();
+        // Afficher l'app principale
+        document.getElementById('sc-auth').classList.remove('on');
+        navTo('home');
+      } else {
+        currentUser = null;
+        // Afficher l'écran auth
+        showScreen('auth');
+      }
+    });
   } catch(e) {
     console.error('Firebase error:', e);
     fbOK = false; updFB();
+    // Si Firebase échoue, laisser jouer quand même
+    navTo('home');
   }
+}
+
+/* ---- AUTH FUNCTIONS ---- */
+function signInGoogle() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider)
+    .then(result => {
+      toast('✅ Connecté avec Google !', 's', 3000);
+    })
+    .catch(e => {
+      console.error(e);
+      toast('❌ Erreur Google: ' + e.message, 'e', 4000);
+    });
+}
+
+function showEmailAuth() {
+  showM('Connexion Email', `
+    <div class="ig"><div class="ilb">Adresse email</div>
+      <input class="inp" id="auth-email" type="email" placeholder="mon@email.com" style="font-size:14px;">
+    </div>
+    <div class="ig"><div class="ilb">Mot de passe</div>
+      <input class="inp" id="auth-pwd" type="password" placeholder="••••••••" style="font-size:14px;">
+    </div>
+    <button class="btn bp" style="width:100%;margin-bottom:8px;" onclick="signInEmail()">Se connecter</button>
+    <button class="btn bs" style="width:100%;margin-bottom:8px;" onclick="signUpEmail()">Créer un compte</button>
+    <button class="btn bs" style="width:100%;" onclick="closeM()">Annuler</button>
+  `);
+}
+
+function signInEmail() {
+  const email = document.getElementById('auth-email')?.value;
+  const pwd = document.getElementById('auth-pwd')?.value;
+  if(!email||!pwd){toast('❌ Remplis tous les champs !','e');return;}
+  auth.signInWithEmailAndPassword(email, pwd)
+    .then(()=>{ closeM(); toast('✅ Connecté !','s'); })
+    .catch(e=>{ toast('❌ '+e.message,'e',4000); });
+}
+
+function signUpEmail() {
+  const email = document.getElementById('auth-email')?.value;
+  const pwd = document.getElementById('auth-pwd')?.value;
+  if(!email||!pwd){toast('❌ Remplis tous les champs !','e');return;}
+  if(pwd.length<6){toast('❌ Mot de passe: 6 caractères min','e');return;}
+  auth.createUserWithEmailAndPassword(email, pwd)
+    .then(()=>{ closeM(); toast('✅ Compte créé !','s'); })
+    .catch(e=>{ toast('❌ '+e.message,'e',4000); });
+}
+
+let phoneConfirmResult = null;
+function showPhoneAuth() {
+  showM('Connexion Téléphone', `
+    <div class="ig"><div class="ilb">Numéro de téléphone</div>
+      <input class="inp" id="auth-phone" type="tel" placeholder="+225 07 00 00 00 00" style="font-size:14px;">
+    </div>
+    <div id="recaptcha-container-m" style="margin:10px 0;display:flex;justify-content:center;"></div>
+    <button class="btn bp" style="width:100%;margin-bottom:8px;" onclick="sendSMS()">Envoyer le code SMS</button>
+    <div id="sms-code-section" style="display:none;">
+      <div class="ig" style="margin-top:8px;"><div class="ilb">Code SMS reçu</div>
+        <input class="inp" id="auth-sms" type="number" placeholder="123456" style="font-size:18px;letter-spacing:4px;text-align:center;">
+      </div>
+      <button class="btn bp" style="width:100%;" onclick="verifySMS()">Valider le code</button>
+    </div>
+    <button class="btn bs" style="width:100%;margin-top:8px;" onclick="closeM()">Annuler</button>
+  `);
+  setTimeout(()=>{
+    try {
+      window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container-m',{size:'normal'});
+      window.recaptchaVerifier.render();
+    }catch(e){console.warn('reCAPTCHA:',e);}
+  },300);
+}
+
+function sendSMS() {
+  const phone = document.getElementById('auth-phone')?.value;
+  if(!phone){toast('❌ Entre ton numéro !','e');return;}
+  auth.signInWithPhoneNumber(phone, window.recaptchaVerifier)
+    .then(result=>{
+      phoneConfirmResult = result;
+      document.getElementById('sms-code-section').style.display='block';
+      toast('✅ SMS envoyé !','s');
+    })
+    .catch(e=>{ toast('❌ '+e.message,'e',4000); });
+}
+
+function verifySMS() {
+  const code = document.getElementById('auth-sms')?.value;
+  if(!code){toast('❌ Entre le code SMS !','e');return;}
+  phoneConfirmResult?.confirm(code)
+    .then(()=>{ closeM(); toast('✅ Connecté !','s'); })
+    .catch(e=>{ toast('❌ Code incorrect','e'); });
+}
+
+function signInPlayGames() {
+  const provider = new firebase.auth.OAuthProvider('playgames.google.com');
+  auth.signInWithPopup(provider)
+    .then(()=>toast('✅ Connecté via Play Games !','s'))
+    .catch(e=>{
+      toast('ℹ️ Play Games: utilise l'app Android','',4000);
+      console.warn(e);
+    });
+}
+
+function playAnonymous() {
+  auth.signInAnonymously()
+    .then(()=>{ toast('👤 Mode anonyme','',2000); })
+    .catch(()=>{
+      // Sans Firebase, jouer quand même
+      document.getElementById('sc-auth').classList.remove('on');
+      navTo('home');
+    });
+}
+
+function signOut() {
+  if(auth) auth.signOut().then(()=>{
+    currentUser = null;
+    toast('👋 Déconnecté','',2000);
+    // Retourner à l'écran auth
+    document.querySelectorAll('.sc').forEach(s=>{s.classList.remove('on');s.style.display='';});
+    const authSc = document.getElementById('sc-auth');
+    if(authSc) authSc.classList.add('on');
+  });
+}
+
+/* ---- PHOTO PROFIL ---- */
+function changeProfilePhoto() {
+  document.getElementById('photo-input')?.click();
+}
+
+function handlePhotoUpload(event) {
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const dataUrl = e.target.result;
+    G.photoURL = dataUrl;
+    applyProfilePhoto(dataUrl);
+    localStorage.setItem('gc-photo', dataUrl);
+    // Si Firebase Storage disponible, uploader
+    if(currentUser && firebase.storage) {
+      const ref = firebase.storage().ref('profiles/' + PID + '.jpg');
+      ref.putString(dataUrl, 'data_url')
+        .then(()=>toast('✅ Photo enregistrée !','s'))
+        .catch(e=>console.warn('Storage:',e));
+    }
+    toast('✅ Photo de profil mise à jour !','s');
+  };
+  reader.readAsDataURL(file);
+}
+
+function applyProfilePhoto(url) {
+  const letter = document.getElementById('profile-avatar-letter');
+  const img = document.getElementById('profile-avatar-img');
+  if(img && url) {
+    img.src = url;
+    img.style.display = 'block';
+    if(letter) letter.style.display = 'none';
+  }
+}
+
+/* ---- NOTIFICATIONS SYSTÈME ---- */
+function sendSystemNotif(title, body, tag='geocode') {
+  // Toast in-app toujours
+  addN(title + ': ' + body);
+  // Notification système si permission accordée
+  if(!('Notification' in window)) return;
+  if(Notification.permission === 'granted') {
+    try {
+      const n = new Notification('GÉOCODE — ' + title, {
+        body: body,
+        icon: './192.png',
+        badge: './192.png',
+        tag: 'geocode-' + tag,
+        renotify: true,
+        silent: false,
+        vibrate: [200, 100, 200],
+      });
+      n.onclick = () => { window.focus(); n.close(); };
+    } catch(e) {}
+  } else if(Notification.permission !== 'denied') {
+    Notification.requestPermission().then(p => {
+      if(p === 'granted') sendSystemNotif(title, body, tag);
+    });
+  }
+}
+
+/* ---- RESET ÉTAT ÉLIMINÉ pour nouvelle partie ---- */
+function resetEliminatedState() {
+  G.elim = false;
+  G.over = false;
+  G.country = '';
+  G.cOK = false;
+  document.getElementById('ebanner')?.classList.remove('on');
+  navTo('home');
 }
 
 function updFB() {
@@ -1349,10 +1671,14 @@ function hostStart() {
 /* ---- LAUNCH ---- */
 function launch() {
   G.started=true;
+  // Reset état éliminé à chaque nouvelle partie
+  G.elim=false;
+  document.getElementById('ebanner')?.classList.remove('on');
+  document.getElementById('mta').style.display='none';
   const d=document.getElementById('mycd'); if(d) d.textContent=G.country;
   renderGame(); showSc('game');
   toast('🎮 La partie commence !','g',3000);
-  addN('🎮 Partie lancée !');
+  addNWithSystem('🎮 Partie lancée !', 'GÉOCODE', 'La partie commence !', 'start');
   // Solo: démarrer l'IA si le premier tour est un bot
   // Multi: attendre que Firebase notifie chaque joueur de son tour
   if(G.isSolo) setTimeout(chkT,600);
@@ -1608,7 +1934,7 @@ function botT(bot) {
           bot.score+=300;
           addLog(`💀 ${bot.name} a deviné ton pays "${G.country}" !`,'e');
           toast(`💀 ${bot.name} a deviné ton pays ! Attends la prochaine partie.`,'e',5000);
-          addN(`💀 ${bot.name} t'a éliminé !`);
+          addNWithSystem(`💀 ${bot.name} t'a éliminé !`, '💀 Éliminé !', `${bot.name} a deviné ton pays !`, 'elim');
           if(roomRef) roomRef.child('players/'+PID+'/eliminated').set(true);
           pushGS();
         } else {
@@ -1675,7 +2001,7 @@ function endGame() {
   if(winner?.isMe){
     G.wins++; updStats(); showConfetti();
     toast('🏆 TU AS GAGNÉ !','g',5000);
-    addN('🏆 Victoire ! Tu as gagné !');
+    addNWithSystem('🏆 Victoire !', '🏆 Victoire GÉOCODE !', 'Tu as remporté la partie !', 'win');
     trigPush('🏆 Victoire !','Tu as remporté la partie GÉOCODE !');
   } else {
     toast(`🏆 ${winner?.name||'???'} a gagné !`,'',4000);
@@ -1725,7 +2051,13 @@ function showConfetti() {
 function addN(msg) {
   G.notifs.unshift({msg,time:new Date().toLocaleTimeString('fr')});
   if(G.notifs.length>20) G.notifs.pop();
-  rdrN(); document.getElementById('ndot')?.classList.add('on');
+  rdrN();
+  document.getElementById('ndot')?.classList.add('on');
+}
+
+function addNWithSystem(msg, systemTitle, systemBody, tag) {
+  addN(msg);
+  sendSystemNotif(systemTitle||'GÉOCODE', systemBody||msg, tag||'general');
 }
 
 function rdrN() {
