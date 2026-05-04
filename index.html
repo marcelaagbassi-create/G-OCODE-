@@ -879,41 +879,49 @@ let G = {
 
 /* ---- INIT ---- */
 window.addEventListener('load', () => {
-  loadTheme(); loadStats();
+  loadTheme();
+  loadStats();
   document.getElementById('set-name').textContent = G.name;
 
-  // Charger la photo sauvegardée localement
-  const savedPhoto = localStorage.getItem('gc-photo');
-  if(savedPhoto) { G.photoURL = savedPhoto; setTimeout(()=>applyProfilePhoto(savedPhoto),500); }
+  // ÉTAPE 1: Afficher home IMMÉDIATEMENT — pas besoin d'attendre Firebase
+  // On active l'écran home tout de suite
+  const homeScreen = document.getElementById('sc-home');
+  if(homeScreen) homeScreen.classList.add('on');
 
-  // TOUJOURS masquer le loader après 2.3s — peu importe Firebase
+  // ÉTAPE 2: Masquer le loader après 1.8s
   setTimeout(() => {
-    document.getElementById('loader').classList.add('out');
-  }, 2300);
+    const loader = document.getElementById('loader');
+    if(loader) loader.classList.add('out');
+  }, 1800);
 
-  setTimeout(() => showNav(), 100);
+  // ÉTAPE 3: Charger photo locale
+  const savedPhoto = localStorage.getItem('gc-photo');
+  if(savedPhoto) {
+    G.photoURL = savedPhoto;
+    setTimeout(() => applyProfilePhoto(savedPhoto), 800);
+  }
 
-  // Lancer Firebase en arrière-plan — l'app reste accessible pendant ce temps
-  initFB();
+  // ÉTAPE 4: Lancer Firebase EN ARRIÈRE-PLAN
+  // L'app est déjà affichée — Firebase met à jour le profil quand il répond
+  setTimeout(() => {
+    try { initFB(); } catch(e) { console.warn('Firebase init error:', e); }
+  }, 200);
 
+  // ÉTAPE 5: Afficher la nav
+  setTimeout(() => showNav(), 500);
+
+  // ÉTAPE 6: Préparer scores
   showScores();
 
-  // Timeout de sécurité: si après 4s on n'est toujours pas connecté,
-  // aller directement à l'accueil sans bloquer
+  // ÉTAPE 7: Goer en ligne après connexion Firebase
+  setTimeout(() => { if(fbOK && db) goOnline(); }, 5000);
+
+  // ÉTAPE 8: Demander permission notifications (discret)
   setTimeout(() => {
-    const authSc = document.getElementById('sc-auth');
-    const isOnAuthScreen = authSc && (authSc.classList.contains('on') || authSc.style.display !== 'none');
-    if(!currentUser && !isOnAuthScreen) {
-      // Firebase n'a pas répondu → aller à l'accueil directement
-      navTo('home');
+    if('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
     }
-  }, 4000);
-
-  setTimeout(() => { if(fbOK) goOnline(); }, 3500);
-
-  if('Notification' in window && Notification.permission === 'default') {
-    setTimeout(() => Notification.requestPermission(), 6000);
-  }
+  }, 8000);
 });
 
 /* ---- FIREBASE ---- */
@@ -929,37 +937,31 @@ function initFB() {
       fbOK = s.val() === true;
       updFB();
     });
-    // Écouter l'état d'authentification
+    // Écouter l'état d'authentification (en arrière-plan — l'app tourne déjà)
     auth.onAuthStateChanged(user => {
       if (user) {
         currentUser = user;
+        // Mettre à jour le profil silencieusement
         G.name = (user.displayName || user.email?.split('@')[0] || localStorage.getItem('gc-name') || 'JOUEUR').toUpperCase().slice(0,16);
         localStorage.setItem('gc-name', G.name);
-        if(user.photoURL) {
+        if(user.photoURL && !localStorage.getItem('gc-photo')) {
           G.photoURL = user.photoURL;
-          setTimeout(() => applyProfilePhoto(user.photoURL), 300);
+          applyProfilePhoto(user.photoURL);
         }
         document.getElementById('set-name').textContent = G.name;
-        setTimeout(() => updateProfile(), 300);
-        // Masquer l'écran auth et aller à l'accueil
+        updateProfile();
+        // Si on était sur l'écran auth → aller à home
         const authSc = document.getElementById('sc-auth');
-        if(authSc) authSc.classList.remove('on');
-        navTo('home');
+        if(authSc && authSc.classList.contains('on')) {
+          authSc.classList.remove('on');
+          navTo('home');
+        }
+        // Aller en ligne maintenant qu'on est connecté
+        if(fbOK && db) setTimeout(goOnline, 500);
       } else {
         currentUser = null;
-        // Si l'utilisateur a déjà un nom sauvegardé → jouer sans compte directement
-        const savedName = localStorage.getItem('gc-name');
-        if(savedName && savedName !== 'JOUEUR') {
-          // A déjà joué avant → accès direct
-          navTo('home');
-        } else {
-          // Première fois → montrer l'écran auth
-          const authSc = document.getElementById('sc-auth');
-          if(authSc) {
-            document.querySelectorAll('.sc').forEach(s=>{s.classList.remove('on');s.style.display='';});
-            authSc.classList.add('on');
-          }
-        }
+        // PAS de redirection forcée — l'utilisateur joue déjà
+        // L'écran auth n'est montré QUE si le joueur clique sur "Se connecter"
       }
     });
   } catch(e) {
