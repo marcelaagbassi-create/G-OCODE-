@@ -334,51 +334,138 @@ body{font-family:var(--fb);background:var(--bg);color:var(--text);min-height:100
 <div class="app">
 
   <!-- ===== AUTH SCREEN ===== -->
-  <div class="sc" id="sc-auth" style="padding-bottom:0;background:var(--bg);min-height:100vh;align-items:center;justify-content:center;">
-    <div style="padding:40px 24px;text-align:center;width:100%;max-width:380px;margin:0 auto;">
-      <!-- Logo -->
-      <svg width="80" height="80" viewBox="0 0 100 100" style="margin:0 auto 16px;display:block;filter:drop-shadow(0 0 12px var(--accent));">
-        <circle cx="50" cy="50" r="44" fill="none" stroke="var(--accent)" stroke-width="3"/>
-        <ellipse cx="50" cy="50" rx="22" ry="44" fill="none" stroke="var(--accent)" stroke-width="2"/>
-        <ellipse cx="50" cy="50" rx="44" ry="15" fill="none" stroke="var(--accent)" stroke-width="2"/>
-        <path d="M28 36 Q36 29 45 34 Q52 37 48 46 Q43 53 36 49Z" fill="var(--accent)" fill-opacity=".6"/>
-        <path d="M57 38 Q65 32 73 37 Q79 42 74 51 Q68 57 60 52Z" fill="var(--accent)" fill-opacity=".4"/>
-        <path d="M32 56 Q41 52 45 62 Q43 70 37 67Z" fill="var(--accent2)" fill-opacity=".6"/>
-      </svg>
-      <div style="font-family:var(--fh);font-size:32px;font-weight:900;color:var(--accent);letter-spacing:3px;text-shadow:var(--glow);">GÉOCODE</div>
-      <div style="font-size:11px;color:var(--text2);letter-spacing:2px;text-transform:uppercase;margin-top:4px;margin-bottom:32px;">Devine · Élimine · Domine</div>
+  <div class="sc" id="sc-auth" style="padding-bottom:0;background:var(--bg);min-height:100vh;">
+    <div style="max-width:420px;margin:0 auto;width:100%;">
+      <!-- Header logo -->
+      <div style="text-align:center;padding:40px 24px 20px;">
+        <svg width="72" height="72" viewBox="0 0 100 100" style="margin:0 auto 12px;display:block;filter:drop-shadow(0 0 12px var(--accent));">
+          <circle cx="50" cy="50" r="44" fill="none" stroke="var(--accent)" stroke-width="3"/>
+          <ellipse cx="50" cy="50" rx="22" ry="44" fill="none" stroke="var(--accent)" stroke-width="2"/>
+          <ellipse cx="50" cy="50" rx="44" ry="15" fill="none" stroke="var(--accent)" stroke-width="2"/>
+          <path d="M28 36 Q36 29 45 34 Q52 37 48 46 Q43 53 36 49Z" fill="var(--accent)" fill-opacity=".6"/>
+          <path d="M57 38 Q65 32 73 37 Q79 42 74 51 Q68 57 60 52Z" fill="var(--accent)" fill-opacity=".4"/>
+          <path d="M32 56 Q41 52 45 62 Q43 70 37 67Z" fill="var(--accent2)" fill-opacity=".6"/>
+        </svg>
+        <div style="font-family:var(--fh);font-size:28px;font-weight:900;color:var(--accent);letter-spacing:3px;text-shadow:var(--glow);">GÉOCODE</div>
+        <div style="font-size:10px;color:var(--text2);letter-spacing:2px;text-transform:uppercase;margin-top:4px;">Devine · Élimine · Domine</div>
+      </div>
 
-      <!-- Connexion Google -->
-      <button class="btn" onclick="signInGoogle()" style="width:100%;background:#fff;color:#333;border:1px solid #ddd;margin-bottom:10px;gap:12px;">
-        <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-        Continuer avec Google
-      </button>
+      <!-- Onglets Connexion / Inscription -->
+      <div style="display:flex;border-bottom:1px solid var(--border);margin:0 24px;">
+        <div id="auth-tab-login" onclick="switchAuthTab('login')"
+          style="flex:1;padding:10px;text-align:center;font-family:var(--fh);font-size:11px;letter-spacing:1px;color:var(--accent);border-bottom:2px solid var(--accent);cursor:pointer;">
+          CONNEXION
+        </div>
+        <div id="auth-tab-signup" onclick="switchAuthTab('signup')"
+          style="flex:1;padding:10px;text-align:center;font-family:var(--fh);font-size:11px;letter-spacing:1px;color:var(--text3);border-bottom:2px solid transparent;cursor:pointer;">
+          INSCRIPTION
+        </div>
+      </div>
 
-      <!-- Connexion Email -->
-      <button class="btn bs" onclick="showEmailAuth()" style="width:100%;margin-bottom:10px;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 8l10 6 10-6"/></svg>
-        Continuer avec Email
-      </button>
+      <!-- CONTENU CONNEXION -->
+      <div id="auth-login-content" style="padding:20px 24px;">
+        <!-- Google -->
+        <button class="btn" onclick="signInGoogle()" style="width:100%;background:#fff;color:#222;border:1px solid #ddd;margin-bottom:10px;justify-content:flex-start;padding:12px 16px;">
+          <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+          <span style="flex:1;text-align:center;">Connexion avec Google</span>
+        </button>
 
-      <!-- Connexion Téléphone -->
-      <button class="btn bs" onclick="showPhoneAuth()" style="width:100%;margin-bottom:10px;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg>
-        Continuer avec Téléphone
-      </button>
+        <!-- Play Games -->
+        <button class="btn bs" onclick="signInPlayGames()" style="width:100%;margin-bottom:10px;justify-content:flex-start;padding:12px 16px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#00C853"/><polygon points="8 5 19 12 8 19" fill="white"/></svg>
+          <span style="flex:1;text-align:center;">Play Games</span>
+        </button>
 
-      <!-- Play Games -->
-      <button class="btn bs" onclick="signInPlayGames()" style="width:100%;margin-bottom:24px;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-        Play Games (Android)
-      </button>
+        <div style="display:flex;align-items:center;gap:10px;margin:14px 0;">
+          <div style="flex:1;height:1px;background:var(--border);"></div>
+          <span style="font-size:11px;color:var(--text3);">OU</span>
+          <div style="flex:1;height:1px;background:var(--border);"></div>
+        </div>
 
-      <!-- Jouer sans compte -->
-      <button onclick="playAnonymous()" style="background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;text-decoration:underline;font-family:var(--fb);">
-        Jouer sans compte →
-      </button>
+        <!-- Email login -->
+        <div class="ig">
+          <div class="ilb">Adresse email</div>
+          <input class="inp" id="login-email" type="email" placeholder="mon@email.com" style="font-size:14px;">
+        </div>
+        <div class="ig">
+          <div class="ilb">Mot de passe</div>
+          <input class="inp" id="login-pwd" type="password" placeholder="••••••••" style="font-size:14px;">
+        </div>
+        <button class="btn bp" style="width:100%;margin-bottom:10px;" onclick="signInEmail()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 8l10 6 10-6"/></svg>
+          Se connecter
+        </button>
 
-      <!-- reCAPTCHA container -->
-      <div id="recaptcha-container" style="margin-top:12px;display:flex;justify-content:center;"></div>
+        <div style="display:flex;align-items:center;gap:10px;margin:14px 0;">
+          <div style="flex:1;height:1px;background:var(--border);"></div>
+          <span style="font-size:11px;color:var(--text3);">OU PAR SMS</span>
+          <div style="flex:1;height:1px;background:var(--border);"></div>
+        </div>
+
+        <!-- Téléphone -->
+        <div class="ig">
+          <div class="ilb">Numéro de téléphone</div>
+          <input class="inp" id="login-phone" type="tel" placeholder="+225 07 00 00 00 00" style="font-size:14px;">
+        </div>
+        <div id="recaptcha-login" style="margin:8px 0;display:flex;justify-content:center;"></div>
+        <button class="btn bs" style="width:100%;margin-bottom:6px;" onclick="sendSMSLogin()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="18" r="1" fill="currentColor"/></svg>
+          Envoyer le code SMS
+        </button>
+        <div id="sms-login-section" style="display:none;">
+          <div class="ig" style="margin-top:8px;">
+            <div class="ilb">Code SMS</div>
+            <input class="inp" id="login-sms" type="number" placeholder="123456" style="font-size:20px;letter-spacing:6px;text-align:center;">
+          </div>
+          <button class="btn bp" style="width:100%;" onclick="verifySMSLogin()">Valider le code</button>
+        </div>
+
+        <button onclick="playAnonymous()" style="display:block;width:100%;text-align:center;background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;text-decoration:underline;font-family:var(--fb);margin-top:16px;padding:8px;">
+          Jouer sans compte →
+        </button>
+      </div>
+
+      <!-- CONTENU INSCRIPTION -->
+      <div id="auth-signup-content" style="padding:20px 24px;display:none;">
+        <!-- Google signup -->
+        <button class="btn" onclick="signInGoogle()" style="width:100%;background:#fff;color:#222;border:1px solid #ddd;margin-bottom:10px;justify-content:flex-start;padding:12px 16px;">
+          <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+          <span style="flex:1;text-align:center;">S'inscrire avec Google</span>
+        </button>
+
+        <div style="display:flex;align-items:center;gap:10px;margin:14px 0;">
+          <div style="flex:1;height:1px;background:var(--border);"></div>
+          <span style="font-size:11px;color:var(--text3);">OU PAR EMAIL</span>
+          <div style="flex:1;height:1px;background:var(--border);"></div>
+        </div>
+
+        <div class="ig">
+          <div class="ilb">Pseudo de joueur</div>
+          <input class="inp" id="signup-name" placeholder="EX: DAVIESLAY" maxlength="16" oninput="this.value=this.value.toUpperCase()" style="font-family:var(--fh);letter-spacing:2px;">
+        </div>
+        <div class="ig">
+          <div class="ilb">Adresse email</div>
+          <input class="inp" id="signup-email" type="email" placeholder="mon@email.com" style="font-size:14px;">
+        </div>
+        <div class="ig">
+          <div class="ilb">Mot de passe (6 car. min)</div>
+          <input class="inp" id="signup-pwd" type="password" placeholder="••••••••" style="font-size:14px;">
+        </div>
+        <div class="ig">
+          <div class="ilb">Confirmer le mot de passe</div>
+          <input class="inp" id="signup-pwd2" type="password" placeholder="••••••••" style="font-size:14px;">
+        </div>
+        <button class="btn bp" style="width:100%;margin-bottom:10px;" onclick="signUpEmail()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+          Créer mon compte
+        </button>
+
+        <button onclick="playAnonymous()" style="display:block;width:100%;text-align:center;background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;text-decoration:underline;font-family:var(--fb);margin-top:8px;padding:8px;">
+          Jouer sans compte →
+        </button>
+      </div>
+
+      <div id="recaptcha-container" style="display:none;"></div>
     </div>
   </div>
 
@@ -569,7 +656,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--text);min-height:100
       <div class="stitle">🌐 Joueurs en ligne</div>
       <div id="online-players-list">
         <div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">
-          <div style="font-size:24px;margin-bottom:8px;">🔍</div>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5" style="margin:0 auto 8px;display:block;"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
           Recherche des joueurs en ligne...
         </div>
       </div>
@@ -578,11 +665,14 @@ body{font-family:var(--fb);background:var(--bg);color:var(--text);min-height:100
       <div class="stitle" style="margin-top:16px;">🏠 Salons ouverts</div>
       <div id="open-rooms-list">
         <div style="text-align:center;padding:20px;color:var(--text3);font-size:12px;">
-          <div style="font-size:24px;margin-bottom:8px;">🚪</div>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5" style="margin:0 auto 8px;display:block;"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 12h.01"/></svg>
           Aucun salon ouvert pour le moment
         </div>
       </div>
-      <button class="btn bs" style="width:100%;margin-top:10px;" onclick="refreshOnline()">🔄 Actualiser</button>
+      <button class="btn bs" style="width:100%;margin-top:10px;" onclick="refreshOnline()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Actualiser
+      </button>
     </div>
 
     <!-- ONGLET MODES -->
@@ -985,82 +1075,135 @@ function signInGoogle() {
     });
 }
 
+/* ---- SWITCH ONGLETS AUTH ---- */
+function switchAuthTab(tab) {
+  const loginTab = document.getElementById('auth-tab-login');
+  const signupTab = document.getElementById('auth-tab-signup');
+  const loginContent = document.getElementById('auth-login-content');
+  const signupContent = document.getElementById('auth-signup-content');
+  if(tab === 'login') {
+    if(loginTab) { loginTab.style.color='var(--accent)'; loginTab.style.borderBottomColor='var(--accent)'; }
+    if(signupTab) { signupTab.style.color='var(--text3)'; signupTab.style.borderBottomColor='transparent'; }
+    if(loginContent) loginContent.style.display='block';
+    if(signupContent) signupContent.style.display='none';
+  } else {
+    if(signupTab) { signupTab.style.color='var(--accent)'; signupTab.style.borderBottomColor='var(--accent)'; }
+    if(loginTab) { loginTab.style.color='var(--text3)'; loginTab.style.borderBottomColor='transparent'; }
+    if(signupContent) signupContent.style.display='block';
+    if(loginContent) loginContent.style.display='none';
+  }
+}
+
 function showEmailAuth() {
-  showM('Connexion Email', `
-    <div class="ig"><div class="ilb">Adresse email</div>
-      <input class="inp" id="auth-email" type="email" placeholder="mon@email.com" style="font-size:14px;">
-    </div>
-    <div class="ig"><div class="ilb">Mot de passe</div>
-      <input class="inp" id="auth-pwd" type="password" placeholder="••••••••" style="font-size:14px;">
-    </div>
-    <button class="btn bp" style="width:100%;margin-bottom:8px;" onclick="signInEmail()">Se connecter</button>
-    <button class="btn bs" style="width:100%;margin-bottom:8px;" onclick="signUpEmail()">Créer un compte</button>
-    <button class="btn bs" style="width:100%;" onclick="closeM()">Annuler</button>
-  `);
+  // Rediriger vers l'écran auth onglet connexion
+  const authSc = document.getElementById('sc-auth');
+  if(authSc) {
+    document.querySelectorAll('.sc').forEach(s=>{s.classList.remove('on');s.style.display='';});
+    authSc.classList.add('on');
+    switchAuthTab('login');
+  }
 }
 
 function signInEmail() {
-  const email = document.getElementById('auth-email')?.value;
-  const pwd = document.getElementById('auth-pwd')?.value;
+  const email = (document.getElementById('login-email')?.value || '').trim();
+  const pwd = document.getElementById('login-pwd')?.value || '';
   if(!email||!pwd){toast('❌ Remplis tous les champs !','e');return;}
+  if(!auth){toast('❌ Firebase non connecté','e');return;}
   auth.signInWithEmailAndPassword(email, pwd)
-    .then(()=>{ closeM(); toast('✅ Connecté !','s'); })
-    .catch(e=>{ toast('❌ '+e.message,'e',4000); });
+    .then(()=>{ toast('✅ Connecté !','s'); })
+    .catch(e=>{
+      const msgs = {
+        'auth/user-not-found': '❌ Aucun compte avec cet email',
+        'auth/wrong-password': '❌ Mot de passe incorrect',
+        'auth/invalid-email': '❌ Email invalide',
+        'auth/too-many-requests': '❌ Trop de tentatives, réessaie plus tard'
+      };
+      toast(msgs[e.code] || '❌ '+e.message,'e',4000);
+    });
 }
 
 function signUpEmail() {
-  const email = document.getElementById('auth-email')?.value;
-  const pwd = document.getElementById('auth-pwd')?.value;
-  if(!email||!pwd){toast('❌ Remplis tous les champs !','e');return;}
-  if(pwd.length<6){toast('❌ Mot de passe: 6 caractères min','e');return;}
+  const name = (document.getElementById('signup-name')?.value || '').trim().toUpperCase();
+  const email = (document.getElementById('signup-email')?.value || '').trim();
+  const pwd = document.getElementById('signup-pwd')?.value || '';
+  const pwd2 = document.getElementById('signup-pwd2')?.value || '';
+  if(!name){toast('❌ Entre ton pseudo !','e');return;}
+  if(!email){toast('❌ Entre ton email !','e');return;}
+  if(pwd.length<6){toast('❌ Mot de passe: 6 caractères minimum','e');return;}
+  if(pwd !== pwd2){toast('❌ Les mots de passe ne correspondent pas !','e');return;}
+  if(!auth){toast('❌ Firebase non connecté','e');return;}
   auth.createUserWithEmailAndPassword(email, pwd)
-    .then(()=>{ closeM(); toast('✅ Compte créé !','s'); })
-    .catch(e=>{ toast('❌ '+e.message,'e',4000); });
+    .then(cred => {
+      // Sauvegarder le pseudo
+      G.name = name;
+      localStorage.setItem('gc-name', name);
+      return cred.user.updateProfile({ displayName: name });
+    })
+    .then(() => {
+      toast('✅ Compte créé ! Bienvenue ' + name + ' !','s',3000);
+    })
+    .catch(e=>{
+      const msgs = {
+        'auth/email-already-in-use': '❌ Cet email est déjà utilisé',
+        'auth/invalid-email': '❌ Email invalide',
+        'auth/weak-password': '❌ Mot de passe trop faible'
+      };
+      toast(msgs[e.code] || '❌ '+e.message,'e',4000);
+    });
 }
 
 let phoneConfirmResult = null;
+
 function showPhoneAuth() {
-  showM('Connexion Téléphone', `
-    <div class="ig"><div class="ilb">Numéro de téléphone</div>
-      <input class="inp" id="auth-phone" type="tel" placeholder="+225 07 00 00 00 00" style="font-size:14px;">
-    </div>
-    <div id="recaptcha-container-m" style="margin:10px 0;display:flex;justify-content:center;"></div>
-    <button class="btn bp" style="width:100%;margin-bottom:8px;" onclick="sendSMS()">Envoyer le code SMS</button>
-    <div id="sms-code-section" style="display:none;">
-      <div class="ig" style="margin-top:8px;"><div class="ilb">Code SMS reçu</div>
-        <input class="inp" id="auth-sms" type="number" placeholder="123456" style="font-size:18px;letter-spacing:4px;text-align:center;">
-      </div>
-      <button class="btn bp" style="width:100%;" onclick="verifySMS()">Valider le code</button>
-    </div>
-    <button class="btn bs" style="width:100%;margin-top:8px;" onclick="closeM()">Annuler</button>
-  `);
-  setTimeout(()=>{
-    try {
-      window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container-m',{size:'normal'});
-      window.recaptchaVerifier.render();
-    }catch(e){console.warn('reCAPTCHA:',e);}
-  },300);
+  // Aller à l'onglet connexion de l'écran auth (le champ téléphone y est)
+  const authSc = document.getElementById('sc-auth');
+  if(authSc) {
+    document.querySelectorAll('.sc').forEach(s=>{s.classList.remove('on');s.style.display='';});
+    authSc.classList.add('on');
+    switchAuthTab('login');
+    // Scroller vers le champ téléphone
+    setTimeout(()=>{
+      document.getElementById('login-phone')?.scrollIntoView({behavior:'smooth'});
+    },300);
+  }
 }
 
-function sendSMS() {
-  const phone = document.getElementById('auth-phone')?.value;
-  if(!phone){toast('❌ Entre ton numéro !','e');return;}
+function sendSMSLogin() {
+  const phone = (document.getElementById('login-phone')?.value || '').trim();
+  if(!phone){toast('❌ Entre ton numéro de téléphone !','e');return;}
+  if(!auth){toast('❌ Firebase non connecté','e');return;}
+  // Initialiser reCAPTCHA
+  if(!window.recaptchaVerifier) {
+    try {
+      window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-login',{
+        size:'normal',
+        callback: ()=>{ sendSMSLogin(); }
+      });
+      window.recaptchaVerifier.render();
+      return;
+    }catch(e){ console.warn('reCAPTCHA:',e); }
+  }
   auth.signInWithPhoneNumber(phone, window.recaptchaVerifier)
     .then(result=>{
       phoneConfirmResult = result;
-      document.getElementById('sms-code-section').style.display='block';
-      toast('✅ SMS envoyé !','s');
+      const sec = document.getElementById('sms-login-section');
+      if(sec) sec.style.display='block';
+      toast('✅ SMS envoyé !','s',3000);
     })
     .catch(e=>{ toast('❌ '+e.message,'e',4000); });
 }
 
-function verifySMS() {
-  const code = document.getElementById('auth-sms')?.value;
-  if(!code){toast('❌ Entre le code SMS !','e');return;}
+function verifySMSLogin() {
+  const code = (document.getElementById('login-sms')?.value || '').trim();
+  if(!code){toast('❌ Entre le code SMS reçu !','e');return;}
   phoneConfirmResult?.confirm(code)
-    .then(()=>{ closeM(); toast('✅ Connecté !','s'); })
-    .catch(e=>{ toast('❌ Code incorrect','e'); });
+    .then(()=>{ toast('✅ Connecté par SMS !','s'); })
+    .catch(()=>{ toast('❌ Code incorrect ou expiré','e'); });
 }
+
+// Compat aliases
+function sendSMS() { sendSMSLogin(); }
+function verifySMS() { verifySMSLogin(); }
 
 function signInPlayGames() {
   const provider = new firebase.auth.OAuthProvider('playgames.google.com');
@@ -1246,14 +1389,37 @@ function sTab(t) {
 
 /* ---- PROFIL ---- */
 function updateProfile() {
-  const av=document.getElementById('profile-avatar');
-  const nm=document.getElementById('profile-name');
-  const pw=document.getElementById('profile-wins');
-  const pe=document.getElementById('profile-elims');
-  if(av) av.textContent=G.name[0]||'J';
-  if(nm) nm.textContent=G.name;
-  if(pw) pw.textContent=G.wins;
-  if(pe) pe.textContent=G.elims;
+  // Lettre de l'avatar
+  const letter = document.getElementById('profile-avatar-letter');
+  if(letter) letter.textContent = G.name[0]||'J';
+  // Nom
+  const nm = document.getElementById('profile-name');
+  if(nm) nm.textContent = G.name;
+  // Stats
+  const pw = document.getElementById('profile-wins');
+  if(pw) pw.textContent = G.wins;
+  const pe = document.getElementById('profile-elims');
+  if(pe) pe.textContent = G.elims;
+  // Status auth
+  const st = document.getElementById('profile-auth-status');
+  if(st) {
+    if(currentUser && !currentUser.isAnonymous) {
+      const provider = currentUser.providerData[0]?.providerId || 'email';
+      const icons = {
+        'google.com': '🔵 Connecté via Google',
+        'phone': '📱 Connecté via SMS',
+        'password': '✉️ Connecté via Email',
+        'playgames.google.com': '🎮 Connecté via Play Games'
+      };
+      st.innerHTML = `<div style="width:6px;height:6px;border-radius:50%;background:var(--success);"></div>${icons[provider]||'🟢 Connecté'}`;
+    } else if(currentUser?.isAnonymous) {
+      st.innerHTML = `<div style="width:6px;height:6px;border-radius:50%;background:var(--warning);"></div>Mode invité`;
+    } else {
+      st.innerHTML = `<div style="width:6px;height:6px;border-radius:50%;background:var(--text3);"></div>Hors connexion`;
+    }
+  }
+  // Photo si disponible
+  if(G.photoURL) applyProfilePhoto(G.photoURL);
 }
 
 /* ---- JOUEURS EN LIGNE (Firebase presence) ---- */
@@ -1305,7 +1471,9 @@ function renderOpenRooms(data) {
   const list=document.getElementById('open-rooms-list'); if(!list) return;
   const rooms=Object.entries(data);
   if(!rooms.length){
-    list.innerHTML=`<div style="text-align:center;padding:16px;color:var(--text3);font-size:12px;">🚪 Aucun salon ouvert</div>`;
+    list.innerHTML=`<div style="text-align:center;padding:16px;color:var(--text3);font-size:12px;">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5" style="margin:0 auto 6px;display:block;"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 12h.01"/></svg>
+      Aucun salon ouvert</div>`;
     return;
   }
   list.innerHTML=rooms.map(([code,r])=>{
