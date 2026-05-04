@@ -1067,7 +1067,7 @@ function signInPlayGames() {
   auth.signInWithPopup(provider)
     .then(()=>toast('✅ Connecté via Play Games !','s'))
     .catch(e=>{
-      toast('ℹ️ Play Games: utilise l'app Android','',4000);
+      toast('ℹ️ Play Games: utilise l\'app Android','',4000);
       console.warn(e);
     });
 }
