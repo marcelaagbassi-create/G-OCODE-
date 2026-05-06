@@ -1575,36 +1575,437 @@ function launchBR() {
 }
 
 /* ---- LOCAL (même WiFi) ---- */
+/* ============================================================
+   MODE LOCAL — WebSocket sur hotspot (sans internet)
+   ============================================================ */
+
+let localWS = null;      // WebSocket vers le serveur local
+let localServerIP = '';  // IP du serveur hôte
+let isLocalMode = false; // Flag mode local actif
+
 function startLocal() {
-  showM('🤝 Mode Local',`
-    <div style="text-align:center;padding:10px 0;">
-      <div style="font-size:36px;margin-bottom:8px;">🤝</div>
-      <div style="font-family:var(--fh);font-size:16px;font-weight:900;color:var(--success);margin-bottom:8px;">ENTRE AMIS</div>
-      <div style="font-size:12px;color:var(--text2);margin-bottom:16px;line-height:1.6;">
-        Connectez tous vos téléphones au <strong style="color:var(--text);">même WiFi</strong><br>
-        Fonctionne aussi avec Firebase désactivé !
+  showM('Mode Local — Hotspot',`
+    <div style="text-align:center;margin-bottom:16px;">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="1.5" style="margin:0 auto 8px;display:block;">
+        <path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/>
+        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
+        <circle cx="12" cy="20" r="1" fill="var(--success)"/>
+      </svg>
+      <div style="font-family:var(--fh);font-size:14px;font-weight:900;color:var(--success);">ENTRE AMIS — LOCAL</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:4px;line-height:1.6;">
+        Hotspot mobile · Bluetooth · WiFi local<br>
+        <strong style="color:var(--text);">Aucune connexion internet requise !</strong>
       </div>
     </div>
+
     <div class="ig">
       <div class="ilb">Ton pseudo</div>
-      <input class="inp" id="local-name" value="${G.name}" maxlength="16" oninput="this.value=this.value.toUpperCase()">
+      <input class="inp" id="local-name" value="${G.name}" maxlength="16" oninput="this.value=this.value.toUpperCase()" style="font-family:var(--fh);letter-spacing:2px;">
     </div>
-    <button class="btn bp" style="width:100%;margin-bottom:8px;" onclick="
-      const n=document.getElementById('local-name').value.trim().toUpperCase();
-      if(n){G.name=n;localStorage.setItem('gc-name',n);}
-      closeM();createRoomLocal();
-    ">
-      🏠 Créer un salon local
-    </button>
-    <button class="btn bs" style="width:100%;margin-bottom:8px;" onclick="
-      const n=document.getElementById('local-name').value.trim().toUpperCase();
-      if(n){G.name=n;localStorage.setItem('gc-name',n);}
-      closeM();sTab('jo');toast('Entre le code du salon local !','',3000);
-    ">
-      🔗 Rejoindre un salon local
-    </button>
+
+    <!-- Onglets HÔTE / REJOINDRE -->
+    <div style="display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:14px;">
+      <div id="ltab-host" onclick="switchLocalTab('host')"
+        style="flex:1;padding:9px;text-align:center;background:var(--success);color:var(--bg);font-family:var(--fh);font-size:10px;letter-spacing:1px;cursor:pointer;">
+        CRÉER
+      </div>
+      <div id="ltab-join" onclick="switchLocalTab('join')"
+        style="flex:1;padding:9px;text-align:center;background:var(--card);color:var(--text2);font-family:var(--fh);font-size:10px;letter-spacing:1px;cursor:pointer;">
+        REJOINDRE
+      </div>
+    </div>
+
+    <!-- Panel HÔTE -->
+    <div id="local-host-panel">
+      <div style="background:rgba(6,214,160,0.08);border:1px solid var(--success);border-radius:8px;padding:12px;margin-bottom:12px;font-size:11px;color:var(--text2);line-height:1.7;">
+        <strong style="color:var(--success);">📱 Instructions pour l'hôte :</strong><br>
+        1. Active ton <strong>Point d'accès mobile</strong><br>
+        2. Lance <strong>server.js</strong> avec Termux ou Node.js<br>
+        3. Note l'IP affichée (ex: 192.168.43.1)<br>
+        4. Entre cette IP ci-dessous et clique Démarrer
+      </div>
+      <div class="ig">
+        <div class="ilb">IP du serveur (ton IP hotspot)</div>
+        <input class="inp" id="local-host-ip" placeholder="192.168.43.1" type="text"
+          style="font-family:var(--fm);font-size:16px;letter-spacing:1px;"
+          value="192.168.43.1">
+      </div>
+      <button class="btn bp" style="width:100%;background:var(--success);margin-bottom:8px;" onclick="connectLocalHost()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Démarrer le serveur local
+      </button>
+    </div>
+
+    <!-- Panel REJOINDRE -->
+    <div id="local-join-panel" style="display:none;">
+      <div style="background:rgba(0,245,212,0.08);border:1px solid var(--accent);border-radius:8px;padding:12px;margin-bottom:12px;font-size:11px;color:var(--text2);line-height:1.7;">
+        <strong style="color:var(--accent);">📱 Instructions :</strong><br>
+        1. Connecte-toi au <strong>hotspot de l'hôte</strong><br>
+        2. Demande l'<strong>IP du serveur</strong> à l'hôte<br>
+        3. Entre cette IP ci-dessous
+      </div>
+      <div class="ig">
+        <div class="ilb">IP du serveur de l'hôte</div>
+        <input class="inp" id="local-join-ip" placeholder="192.168.43.1" type="text"
+          style="font-family:var(--fm);font-size:16px;letter-spacing:1px;">
+      </div>
+      <button class="btn bp" style="width:100%;margin-bottom:8px;" onclick="connectLocalJoin()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        Me connecter au serveur
+      </button>
+    </div>
+
     <button class="btn bs" style="width:100%;" onclick="closeM()">Annuler</button>
   `);
+}
+
+function switchLocalTab(tab) {
+  const hostTab = document.getElementById('ltab-host');
+  const joinTab = document.getElementById('ltab-join');
+  const hostPanel = document.getElementById('local-host-panel');
+  const joinPanel = document.getElementById('local-join-panel');
+  if(tab === 'host') {
+    if(hostTab){hostTab.style.background='var(--success)';hostTab.style.color='var(--bg)';}
+    if(joinTab){joinTab.style.background='var(--card)';joinTab.style.color='var(--text2)';}
+    if(hostPanel) hostPanel.style.display='block';
+    if(joinPanel) joinPanel.style.display='none';
+  } else {
+    if(joinTab){joinTab.style.background='var(--accent)';joinTab.style.color='var(--bg)';}
+    if(hostTab){hostTab.style.background='var(--card)';hostTab.style.color='var(--text2)';}
+    if(joinPanel) joinPanel.style.display='block';
+    if(hostPanel) hostPanel.style.display='none';
+  }
+}
+
+function connectLocalHost() {
+  const name = document.getElementById('local-name')?.value.trim().toUpperCase() || G.name;
+  const ip = document.getElementById('local-host-ip')?.value.trim() || '192.168.43.1';
+  if(name) { G.name=name; localStorage.setItem('gc-name',name); }
+  localServerIP = ip;
+  closeM();
+  connectToLocalServer(ip, () => {
+    // Connecté → créer le salon automatiquement
+    isLocalMode = true;
+    G.isSolo = false;
+    sendLocal({ type:'create_room', pid:PID, name:G.name, maxPlayers:G.maxPlayers||4 });
+  });
+}
+
+function connectLocalJoin() {
+  const name = document.getElementById('local-name')?.value.trim().toUpperCase() || G.name;
+  const ip = document.getElementById('local-join-ip')?.value.trim();
+  if(!ip){ toast('❌ Entre l\'IP du serveur !','e'); return; }
+  if(name) { G.name=name; localStorage.setItem('gc-name',name); }
+  localServerIP = ip;
+  closeM();
+  connectToLocalServer(ip, () => {
+    // Connecté → afficher les salons disponibles
+    isLocalMode = true;
+    G.isSolo = false;
+    toast('✅ Connecté ! Recherche des salons...','s',2000);
+    sendLocal({ type:'list_rooms' });
+    showSc('salon');
+    sTab('jo');
+  });
+}
+
+function connectToLocalServer(ip, onConnected) {
+  const wsUrl = `ws://${ip}:3000`;
+  toast('🔄 Connexion à ' + ip + '...','',2500);
+
+  try {
+    localWS = new WebSocket(wsUrl);
+
+    localWS.onopen = () => {
+      console.log('[LOCAL] Connecté à', wsUrl);
+      toast('✅ Serveur local connecté !','s',2500);
+      // Envoyer présence
+      sendLocal({ type:'presence', pid:PID, name:G.name, wins:G.wins, elims:G.elims });
+      if(onConnected) onConnected();
+    };
+
+    localWS.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        handleLocalMessage(msg);
+      } catch(e) { console.error('[LOCAL] Parse error:', e); }
+    };
+
+    localWS.onclose = () => {
+      console.log('[LOCAL] Déconnecté');
+      if(isLocalMode) toast('⚠️ Connexion locale perdue','e',3000);
+      localWS = null;
+    };
+
+    localWS.onerror = (e) => {
+      console.error('[LOCAL] Erreur WS:', e);
+      toast('❌ Impossible de se connecter à ' + ip,'e',4000);
+      localWS = null;
+    };
+  } catch(e) {
+    toast('❌ Erreur connexion: ' + e.message,'e',4000);
+  }
+}
+
+function sendLocal(msg) {
+  if(localWS && localWS.readyState === WebSocket.OPEN) {
+    localWS.send(JSON.stringify(msg));
+  } else {
+    console.warn('[LOCAL] WS non connecté');
+  }
+}
+
+function handleLocalMessage(msg) {
+  switch(msg.type) {
+
+    case 'room_created':
+      G.roomCode = msg.code;
+      G.isHost = true;
+      setupLobby();
+      showSc('lobby');
+      toast(`🏠 Salon local créé : ${msg.code}`,'s');
+      addN(`Salon local ${msg.code} créé !`);
+      break;
+
+    case 'room_joined':
+      G.roomCode = msg.code;
+      G.isHost = false;
+      setupLobby();
+      showSc('lobby');
+      toast(`✅ Rejoint le salon ${msg.code}`,'s');
+      break;
+
+    case 'room_state':
+      // Mettre à jour la liste des joueurs dans le lobby
+      G.maxPlayers = msg.maxPlayers;
+      G.players = msg.players.map(p => ({
+        ...p, id: p.pid, isMe: p.pid === PID, isBot: false,
+        color: p.pid === PID ? '#00f5d4' : ['#f72585','#7209b7','#ffd60a','#4cc9f0'][
+          msg.players.indexOf(msg.players.find(x=>x.pid===p.pid)) % 4
+        ]
+      }));
+      renderPlayers();
+      const rc = document.getElementById('rcount');
+      if(rc) rc.textContent = G.players.length+'/'+G.maxPlayers+' joueurs';
+      const lprog = document.getElementById('lprog');
+      if(lprog) lprog.style.width = (G.players.length/G.maxPlayers*100)+'%';
+      // Montrer choix pays si >= 2 joueurs
+      if(G.players.length >= 2 && msg.status === 'waiting') {
+        const cc = document.getElementById('cc-sec');
+        if(cc) cc.style.display='block';
+      }
+      break;
+
+    case 'rooms_list':
+      // Afficher les salons locaux dans l'onglet Rejoindre
+      showLocalRooms(msg.rooms);
+      break;
+
+    case 'player_confirmed':
+      addLog(`✅ ${msg.name} a choisi son pays (${msg.countryLen} lettres)`,'s');
+      break;
+
+    case 'game_started':
+      // La partie commence
+      G.myCountry = msg.yourCountry;
+      G.players = msg.players.map(p => ({
+        ...p, id:p.pid, isMe:p.pid===PID, isBot:false,
+        country: p.pid===PID ? msg.yourCountry : '',
+        color: p.pid===PID ? '#00f5d4' : ['#f72585','#7209b7','#ffd60a','#4cc9f0'][
+          msg.players.indexOf(msg.players.find(x=>x.pid===p.pid))%4
+        ]
+      }));
+      G.started=true; G.over=false; G.elim=false;
+      G.used=new Set(msg.gameState?.usedLetters||[]);
+      G.idx=msg.gameState?.currentIdx||0;
+      G.turn=msg.gameState?.turn||1;
+      G.round=msg.gameState?.round||1;
+      // Trouver qui joue en premier
+      const firstPid = msg.currentPlayerPid;
+      G.curPlayerPid = firstPid;
+      document.getElementById('ebanner')?.classList.remove('on');
+      renderGame();
+      showSc('game');
+      toast('🎮 Partie locale lancée !','g',3000);
+      break;
+
+    case 'letter_played':
+      // Un joueur a joué une lettre
+      G.used.add(msg.letter);
+      if(msg.found && msg.found.length > 0) {
+        msg.found.forEach(f => {
+          addLog(`✅ "${msg.letter}" chez ${f.name} — pos: ${f.positions.join(', ')}`,'s');
+          // Mettre à jour les cases du joueur adverse
+          const p = G.players.find(x=>x.id===f.pid);
+          // Les cases s'affichent via renderOp() puisque G.used est mis à jour
+        });
+        toast(`✅ "${msg.letter}" dans ${msg.found.length} pays !`,'s');
+      } else {
+        addLog(`❌ "${msg.letter}" — nulle part`,'e');
+        toast(`❌ "${msg.letter}" nulle part !`,'e');
+      }
+      // Vérifier si ma lettre est révélée
+      if(G.myCountry.includes(msg.letter)) {
+        addLog(`⚠️ "${msg.letter}" est dans TON pays !`,'w');
+      }
+      // Mettre à jour qui joue
+      G.curPlayerPid = msg.nextPlayerPid;
+      // Trouver l'index du prochain joueur
+      const nextIdx = G.players.findIndex(p=>p.id===msg.nextPlayerPid);
+      if(nextIdx>=0) G.idx=nextIdx;
+      G.turn=msg.gameState?.turn||G.turn+1;
+      renderMyLetters(); renderOp(); renderKB(); updT();
+      break;
+
+    case 'player_eliminated':
+      const elim = G.players.find(p=>p.id===msg.eliminatedPid);
+      if(elim) elim.eliminated=true;
+      addLog(`💀 ${msg.byName} a deviné le pays de ${msg.eliminatedName} ! +${msg.points} pts`,'s');
+      if(msg.eliminatedPid===PID) {
+        G.elim=true;
+        document.getElementById('ebanner')?.classList.add('on');
+        document.getElementById('mta').style.display='none';
+        toast(`💀 ${msg.byName} a deviné ton pays !`,'e',4000);
+      } else if(msg.byPid===PID) {
+        G.score+=msg.points; G.pts+=msg.points; G.elims++;
+        updStats();
+        toast(`🎯 Bravo ! +${msg.points} pts`,'g',3000);
+      } else {
+        toast(`💀 ${msg.eliminatedName} éliminé par ${msg.byName}`,'',2500);
+      }
+      renderOp(); updT();
+      break;
+
+    case 'country_revealed':
+      const rev = G.players.find(p=>p.id===msg.pid);
+      if(rev) rev.country=msg.country;
+      renderOp();
+      break;
+
+    case 'wrong_guess':
+      toast(`❌ "${msg.guess}" — Mauvaise réponse`,'e');
+      break;
+
+    case 'guess_failed':
+      addLog(`❌ ${msg.byName} tente "${msg.guess}" — mauvais`,'e');
+      break;
+
+    case 'player_left':
+      addLog(`👋 ${msg.name} a quitté la partie`,'w');
+      toast(`${msg.name} a quitté`,'',2000);
+      break;
+
+    case 'notification':
+      addN(msg.msg);
+      toast(msg.msg,'',2500);
+      break;
+
+    case 'game_over':
+      G.over=true;
+      // Mettre à jour les scores
+      if(msg.scores) {
+        msg.scores.forEach(s=>{
+          const p=G.players.find(x=>x.id===s.pid);
+          if(p){p.score=s.score;p.country=s.country;p.eliminated=s.eliminated;}
+        });
+        if(msg.winnerPid===PID){
+          G.wins++; updStats(); showConfetti();
+          toast('🏆 TU AS GAGNÉ !','g',5000);
+        } else {
+          toast(`🏆 ${msg.winnerName} a gagné !`,'',4000);
+        }
+      }
+      setTimeout(()=>{ showScores(); navTo('scores'); },3000);
+      break;
+
+    case 'error':
+      toast('❌ ' + msg.msg,'e',3000);
+      break;
+
+    case 'player_online':
+      // Un joueur en ligne (pour la liste)
+      break;
+  }
+}
+
+function showLocalRooms(rooms) {
+  if(!rooms || rooms.length===0){
+    toast('Aucun salon local trouvé — vérifie l\'IP','e',3000);
+    return;
+  }
+  const list = document.getElementById('open-rooms-list');
+  if(list) {
+    list.innerHTML = rooms.map(r=>`
+      <div class="card" style="margin-bottom:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div>
+            <div style="font-family:var(--fh);font-size:15px;font-weight:900;color:var(--success);letter-spacing:3px;">${r.code}</div>
+            <div style="font-size:11px;color:var(--text2);">Hôte: ${r.hostName} · LOCAL</div>
+          </div>
+          <div style="font-size:12px;color:var(--text2);">${r.count}/${r.maxPlayers}</div>
+        </div>
+        <button class="btn bp bsm" style="width:100%;background:var(--success);" onclick="joinLocalRoom('${r.code}')">
+          Rejoindre en local
+        </button>
+      </div>`).join('');
+  }
+  sTab('ol');
+}
+
+function joinLocalRoom(code) {
+  sendLocal({ type:'join_room', code, pid:PID, name:G.name });
+}
+
+/* Override playL et mkG pour le mode local */
+const _origPlayL = playL;
+function playL(l) {
+  if(isLocalMode) {
+    // En mode local, envoyer via WebSocket
+    if(G.used.has(l)) return;
+    const cur=G.players[G.idx];
+    if(!cur?.isMe||G.elim||G.over) return;
+    sendLocal({ type:'play_letter', letter:l, pid:PID });
+    return;
+  }
+  _origPlayL(l);
+}
+
+const _origMkG = mkG;
+function mkG() {
+  if(isLocalMode) {
+    const gi=document.getElementById('gi'); if(!gi) return;
+    const g=gi.value.trim().toUpperCase(); gi.value='';
+    if(!g) return;
+    const cur=G.players[G.idx];
+    if(!cur?.isMe||G.elim||G.over) return;
+    // Trouver la cible probable
+    const target=G.players.find(p=>!p.isMe&&!p.eliminated);
+    if(target) {
+      sendLocal({ type:'guess_country', guess:g, targetPid:target.id, pid:PID });
+    }
+    return;
+  }
+  _origMkG();
+}
+
+/* Override hostStart pour mode local */
+const _origHostStart = hostStart;
+function hostStart() {
+  if(isLocalMode) {
+    if(!G.cOK){ toast('❌ Confirme ton pays !','e'); return; }
+    sendLocal({ type:'start_game', pid:PID });
+    return;
+  }
+  _origHostStart();
+}
+
+/* Override cfC pour envoyer le pays au serveur local */
+const _origCfC = cfC;
+function cfC() {
+  _origCfC(); // appel original
+  if(isLocalMode && G.myCountry) {
+    sendLocal({ type:'set_country', country:G.myCountry, pid:PID });
+  }
 }
 
 function createRoomLocal() {
