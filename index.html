@@ -612,21 +612,53 @@ body{font-family:var(--fb);background:var(--bg);color:var(--text);min-height:100
     </div>
     <!-- JOIN -->
     <div id="tab-jo-c" class="sa" style="padding:15px 18px;display:none;">
-      <div class="card cglow" style="margin-bottom:11px;">
-        <div class="stitle">Ton profil</div>
-        <div class="ig"><div class="ilb">Pseudo</div><input class="inp" id="jo-name" placeholder="EX: EINSTEIN" maxlength="16" oninput="this.value=this.value.toUpperCase()"></div>
-      </div>
-      <div class="card" style="margin-bottom:11px;">
-        <div class="stitle">Code du salon</div>
-        <input class="inp" id="jo-code" placeholder="ABCD" maxlength="4" style="text-transform:uppercase;font-family:var(--fh);font-size:30px;font-weight:900;letter-spacing:10px;text-align:center;" oninput="this.value=this.value.toUpperCase()">
-        <div style="font-size:11px;color:var(--text2);text-align:center;margin-top:7px;">Code fourni par le créateur</div>
-      </div>
-      <button class="btn bp" style="width:100%;" onclick="joinRoom()">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-        Rejoindre
-      </button>
-    </div>
+      <div style="font-family:var(--fh);font-size:18px;font-weight:900;letter-spacing:2px;color:var(--text);text-align:center;margin-bottom:16px;">REJOINDRE</div>
 
+      <!-- Pseudo -->
+      <div class="ig" style="margin-bottom:10px;">
+        <div class="ilb">Ton pseudo</div>
+        <input class="inp" id="jo-name" placeholder="EX: DAVIESLAY" maxlength="16" oninput="this.value=this.value.toUpperCase()">
+      </div>
+
+      <!-- Code du salon -->
+      <div class="card" style="margin-bottom:12px;">
+        <div class="stitle">Code du salon</div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:8px;">Code fourni par le créateur</div>
+        <div class="ig">
+          <input class="inp" id="jo-code" placeholder="A B C D" maxlength="4"
+            style="font-family:var(--fh);letter-spacing:8px;font-size:28px;
+            text-transform:uppercase;text-align:center;padding:14px;"
+            oninput="this.value=this.value.toUpperCase()">
+        </div>
+        <button class="btn bp" style="width:100%;margin-top:8px;" onclick="joinRoom()">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          Rejoindre
+        </button>
+      </div>
+
+      <!-- Coller lien d'invitation -->
+      <div class="card" style="margin-bottom:12px;">
+        <div style="font-size:10px;color:var(--text2);text-align:center;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">Ou colle un lien d'invitation</div>
+        <input class="inp" id="jo-invite-link" placeholder="https://..." style="font-size:12px;"
+          oninput="extractCodeFromLink(this.value)">
+      </div>
+
+      <!-- Scanner QR Code -->
+      <div class="card">
+        <div class="stitle">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="3" height="3"/></svg>
+          Scanner un QR Code
+        </div>
+        <div id="qr-reader-container" style="display:none;margin-bottom:10px;">
+          <video id="qr-video" style="width:100%;border-radius:8px;background:#000;max-height:200px;object-fit:cover;" autoplay playsinline></video>
+          <div style="text-align:center;padding:6px 0;font-size:10px;color:var(--text2);">Pointe vers le QR Code...</div>
+        </div>
+        <button class="btn bg" style="width:100%;" id="qr-scan-btn" onclick="toggleQRScanner()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          Ouvrir la caméra
+        </button>
+      </div>
+    </div>
     <!-- ONGLET EN LIGNE -->
     <div id="tab-ol-c" class="sa" style="padding:15px 18px;display:none;">
       <!-- Profil joueur connecté -->
@@ -1543,8 +1575,6 @@ function toggleSoundSetting(el) {
   localStorage.setItem('gc-sound', soundEnabled ? '1' : '0');
   if(soundEnabled) playSound('click');
   // Sync bouton flottant
-  const btn = document.querySelector('#music-ctrl button:last-child');
-  if(btn) btn.style.color = soundEnabled ? 'var(--accent)' : 'var(--text3)';
 }
 
 function toggleMusicSetting(el) {
@@ -1688,31 +1718,83 @@ function renderShop(filter='all') {
     let btnHTML = '';
     if(owned || isUnlockable) {
       if(equipped) {
-        btnHTML = `<button class="btn bs bxs" style="width:100%;opacity:.6;" disabled>✓ Équipé</button>`;
+        btnHTML = `<button class="btn bs bxs" style="width:100%;opacity:.7;font-size:10px;" disabled>✓ ÉQUIPÉ</button>`;
       } else {
-        btnHTML = `<button class="btn bp bxs" style="width:100%;" onclick="equipItem('${item.id}')">Équiper</button>`;
+        btnHTML = `<button class="btn bp bxs" style="width:100%;font-size:10px;" onclick="equipItem('${item.id}')">Équiper</button>`;
       }
     } else if(isFree && canUnlock) {
-      btnHTML = `<button class="btn bp bxs" style="width:100%;background:var(--success);" onclick="buyItem('${item.id}')">Déverrouiller</button>`;
+      btnHTML = `<button class="btn bxs" style="width:100%;background:var(--success);font-size:10px;" onclick="buyItem('${item.id}')">Déverrouiller</button>`;
     } else if(item.unlock && !canUnlock) {
-      btnHTML = `<button class="btn bs bxs" style="width:100%;opacity:.5;" disabled>🔒 Défi requis</button>`;
+      btnHTML = `<button class="btn bs bxs" style="width:100%;opacity:.5;font-size:10px;" disabled>🔒 Défi requis</button>`;
     } else {
-      btnHTML = `<button class="btn ${canAfford?'bg':'bs'} bxs" style="width:100%;${!canAfford?'opacity:.5;':''}" 
+      btnHTML = `<button class="btn ${canAfford?'bg':'bs'} bxs" style="width:100%;font-size:10px;${!canAfford?'opacity:.5;':''}" 
         onclick="buyItem('${item.id}')" ${!canAfford?'disabled':''}>
-        <svg class="coin-mini" viewBox="0 0 36 36"><circle cx="18" cy="18" r="17" fill="#ffd60a"/><text x="18" y="22" text-anchor="middle" font-size="10" font-weight="900" fill="#7a5c00">G</text></svg>
+        <svg width="12" height="12" viewBox="0 0 36 36" style="flex-shrink:0;"><circle cx="18" cy="18" r="17" fill="#ffd60a"/><text x="18" y="22" text-anchor="middle" font-size="11" font-weight="900" fill="#7a5c00">G</text></svg>
         ${item.price}
       </button>`;
     }
 
-    return `<div class="shop-item ${owned?'owned':''} ${equipped?'equipped':''}">
-      ${owned?'<div class="shop-owned-badge">✓ Possédé</div>':''}
+    // Générer le visuel SVG selon la catégorie
+    const visual = getItemVisual(item);
+
+    return `<div class="shop-item ${owned?'owned':''} ${equipped?'equipped':''}" style="display:flex;flex-direction:column;min-height:220px;">
+      ${equipped?'<div class="shop-owned-badge" style="background:var(--accent);">⚡ Équipé</div>':owned?'<div class="shop-owned-badge">✓ Possédé</div>':''}
       ${rarityLabels[item.rarity]?`<div style="font-size:8px;font-weight:700;color:${rarityColors[item.rarity]};letter-spacing:1px;margin-bottom:4px;">${rarityLabels[item.rarity]}</div>`:''}
-      <div class="shop-item-icon">${item.icon}</div>
-      <div class="shop-item-name">${item.name}</div>
-      <div class="shop-item-desc">${item.desc}</div>
-      <div style="margin-bottom:8px;">${btnHTML}</div>
+      <div style="font-size:9px;font-weight:700;color:var(--text);letter-spacing:1px;margin-bottom:2px;">${item.name}</div>
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;margin:6px 0;">
+        ${visual}
+      </div>
+      <div style="font-size:9px;color:var(--text2);margin-bottom:8px;text-align:center;line-height:1.3;">${item.desc}</div>
+      ${btnHTML}
     </div>`;
   }).join('');
+}
+
+function getItemVisual(item) {
+  const id = item.id;
+  // AVATARS
+  if(id==='av_fire') return `<svg width="70" height="70" viewBox="0 0 70 70"><defs><radialGradient id="fg1" cx="50%" cy="80%"><stop offset="0%" stop-color="#ff6b35"/><stop offset="100%" stop-color="#f72585"/></radialGradient></defs><ellipse cx="35" cy="52" rx="18" ry="12" fill="#ff6b3544"/><path d="M35 10 Q28 22 32 30 Q25 24 27 36 Q20 28 25 42 Q28 52 35 58 Q42 52 45 42 Q50 28 43 36 Q45 24 38 30 Q42 22 35 10Z" fill="url(#fg1)"/><circle cx="35" cy="38" r="8" fill="#ffd60a" opacity=".7"/></svg>`;
+  if(id==='av_ice') return `<svg width="70" height="70" viewBox="0 0 70 70"><defs><radialGradient id="ig1" cx="50%" cy="30%"><stop offset="0%" stop-color="#a8edfc"/><stop offset="100%" stop-color="#4cc9f0"/></radialGradient></defs><polygon points="35,8 42,24 58,24 46,34 50,50 35,42 20,50 24,34 12,24 28,24" fill="url(#ig1)" stroke="#fff" stroke-width="1.5" stroke-opacity=".5"/><circle cx="35" cy="35" r="7" fill="white" opacity=".4"/></svg>`;
+  if(id==='av_ghost') return `<svg width="70" height="70" viewBox="0 0 70 70"><path d="M20 55 Q20 20 35 15 Q50 20 50 55 Q45 50 40 55 Q37 50 35 55 Q33 50 30 55 Q25 50 20 55Z" fill="#c8b8ff" stroke="#7209b7" stroke-width="1.5"/><circle cx="28" cy="35" r="5" fill="#1a0030"/><circle cx="42" cy="35" r="5" fill="#1a0030"/><circle cx="30" cy="33" r="2" fill="white"/><circle cx="44" cy="33" r="2" fill="white"/></svg>`;
+  if(id==='av_crown') return `<svg width="70" height="70" viewBox="0 0 70 70"><defs><linearGradient id="cg1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffd60a"/><stop offset="100%" stop-color="#e85d04"/></linearGradient></defs><circle cx="35" cy="42" r="20" fill="url(#cg1)" opacity=".2"/><path d="M15 50 L20 28 L35 40 L50 20 L65 28 L60 50Z" fill="url(#cg1)" stroke="#b8860b" stroke-width="1.5"/><circle cx="15" cy="28" r="5" fill="#ffd60a"/><circle cx="35" cy="20" r="5" fill="#ffd60a"/><circle cx="55" cy="28" r="5" fill="#ffd60a"/><rect x="13" y="50" width="44" height="6" rx="2" fill="url(#cg1)"/></svg>`;
+  if(id==='av_dragon') return `<svg width="70" height="70" viewBox="0 0 70 70"><path d="M35 15 Q20 20 18 35 Q15 45 20 55 Q28 62 35 60 Q42 62 50 55 Q55 45 52 35 Q50 20 35 15Z" fill="#2dc653" opacity=".8"/><path d="M20 22 L10 15 L18 28Z" fill="#2dc653"/><path d="M50 22 L60 15 L52 28Z" fill="#2dc653"/><circle cx="28" cy="35" r="5" fill="#fff"/><circle cx="42" cy="35" r="5" fill="#fff"/><circle cx="29" cy="35" r="3" fill="#1a0030"/><circle cx="43" cy="35" r="3" fill="#1a0030"/><path d="M27 46 Q35 52 43 46" stroke="#1a0030" stroke-width="2" fill="none"/><path d="M15 55 Q18 60 22 58 Q20 52 18 50Z" fill="#ff6b35"/><path d="M55 55 Q52 60 48 58 Q50 52 52 50Z" fill="#ff6b35"/></svg>`;
+  if(id==='av_planet') return `<svg width="70" height="70" viewBox="0 0 70 70"><defs><radialGradient id="pg1" cx="35%" cy="35%"><stop offset="0%" stop-color="#4cc9f0"/><stop offset="100%" stop-color="#7209b7"/></radialGradient></defs><ellipse cx="35" cy="35" rx="22" ry="22" fill="url(#pg1)"/><ellipse cx="35" cy="35" rx="34" ry="12" fill="none" stroke="#ffd60a" stroke-width="3" opacity=".7" transform="rotate(-20,35,35)"/><circle cx="28" cy="28" r="4" fill="#a8edfc" opacity=".5"/></svg>`;
+  if(id==='av_ninja') return `<svg width="70" height="70" viewBox="0 0 70 70"><circle cx="35" cy="35" r="24" fill="#1a1a2e"/><rect x="11" y="30" width="48" height="12" rx="6" fill="#444"/><circle cx="26" cy="34" r="4" fill="#e63946"/><circle cx="44" cy="34" r="4" fill="#e63946"/><path d="M12 42 Q35 58 58 42" stroke="#444" stroke-width="8" fill="none"/><path d="M20 20 Q35 12 50 20" stroke="#222" stroke-width="6" fill="none" stroke-linecap="round"/></svg>`;
+  if(id==='av_robot') return `<svg width="70" height="70" viewBox="0 0 70 70"><rect x="18" y="22" width="34" height="32" rx="4" fill="#4cc9f0" stroke="#0096c7" stroke-width="1.5"/><rect x="23" y="14" width="24" height="10" rx="3" fill="#4cc9f0" stroke="#0096c7" stroke-width="1.5"/><circle cx="35" cy="10" r="3" fill="#ffd60a"/><rect x="24" y="30" width="9" height="9" rx="2" fill="#023e8a"/><circle cx="28" cy="34" r="3" fill="#00b4d8"/><rect x="37" y="30" width="9" height="9" rx="2" fill="#023e8a"/><circle cx="41" cy="34" r="3" fill="#00b4d8"/><rect x="25" y="43" width="20" height="5" rx="2" fill="#0096c7"/><rect x="12" y="28" width="6" height="14" rx="3" fill="#4cc9f0"/><rect x="52" y="28" width="6" height="14" rx="3" fill="#4cc9f0"/></svg>`;
+
+  // THÈMES
+  if(id==='th_midnight') return `<svg width="70" height="70" viewBox="0 0 70 70"><rect width="70" height="70" rx="8" fill="#0a0a12"/><circle cx="35" cy="30" r="12" fill="#1a1a3e" stroke="#7209b7" stroke-width="1.5"/><path d="M30 28 Q35 20 40 28 Q35 36 30 28Z" fill="#7209b7" opacity=".5"/><circle cx="15" cy="15" r="2" fill="white" opacity=".6"/><circle cx="55" cy="20" r="1.5" fill="white" opacity=".5"/><circle cx="20" cy="50" r="1" fill="white" opacity=".4"/><circle cx="58" cy="55" r="2" fill="white" opacity=".6"/></svg>`;
+  if(id==='th_aurora') return `<svg width="70" height="70" viewBox="0 0 70 70"><defs><linearGradient id="ag1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0a0a12"/><stop offset="100%" stop-color="#1a0030"/></linearGradient></defs><rect width="70" height="70" rx="8" fill="url(#ag1)"/><ellipse cx="35" cy="25" rx="28" ry="18" fill="none" stroke="#7209b7" stroke-width="3" opacity=".6"/><ellipse cx="35" cy="30" rx="22" ry="14" fill="none" stroke="#4cc9f0" stroke-width="2" opacity=".5"/><ellipse cx="35" cy="35" rx="16" ry="10" fill="none" stroke="#f72585" stroke-width="2" opacity=".4"/></svg>`;
+  if(id==='th_jungle') return `<svg width="70" height="70" viewBox="0 0 70 70"><rect width="70" height="70" rx="8" fill="#1a2e1a"/><path d="M5 60 Q20 30 35 50 Q50 30 65 60Z" fill="#2d5a27" opacity=".8"/><path d="M15 65 Q25 40 35 55 Q45 40 55 65Z" fill="#2dc653" opacity=".6"/><circle cx="35" cy="25" r="10" fill="#ffd60a" opacity=".3"/></svg>`;
+  if(id==='th_ocean') return `<svg width="70" height="70" viewBox="0 0 70 70"><defs><linearGradient id="oc1" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#023e8a"/><stop offset="100%" stop-color="#0077b6"/></linearGradient></defs><rect width="70" height="70" rx="8" fill="url(#oc1)"/><path d="M0 40 Q17 32 35 40 Q52 48 70 40 L70 70 L0 70Z" fill="#0096c7" opacity=".6"/><path d="M0 50 Q17 42 35 50 Q52 58 70 50 L70 70 L0 70Z" fill="#00b4d8" opacity=".4"/></svg>`;
+  if(id==='th_inferno') return `<svg width="70" height="70" viewBox="0 0 70 70"><defs><linearGradient id="inf1" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#e85d04"/><stop offset="100%" stop-color="#f72585"/></linearGradient></defs><rect width="70" height="70" rx="8" fill="#1a0500"/><circle cx="35" cy="50" r="22" fill="url(#inf1)" opacity=".5"/><path d="M20 65 Q35 30 50 65" fill="#ffd60a" opacity=".3"/></svg>`;
+  if(id==='th_pure') return `<svg width="70" height="70" viewBox="0 0 70 70"><rect width="70" height="70" rx="8" fill="#f8f9fa" stroke="#dee2e6" stroke-width="1"/><circle cx="35" cy="35" r="15" fill="white" stroke="#adb5bd" stroke-width="1"/><circle cx="35" cy="35" r="8" fill="#4361ee" opacity=".2"/></svg>`;
+
+  // BADGES
+  if(id==='bg_veteran') return `<svg width="70" height="70" viewBox="0 0 70 70"><defs><linearGradient id="bg1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4cc9f0"/><stop offset="100%" stop-color="#7209b7"/></linearGradient></defs><polygon points="35,10 42,25 58,28 46,40 49,58 35,50 21,58 24,40 12,28 28,25" fill="url(#bg1)" stroke="#fff" stroke-width="1.5" opacity=".9"/><text x="35" y="40" text-anchor="middle" font-size="16" fill="white">🎖️</text></svg>`;
+  if(id==='bg_hunter') return `<svg width="70" height="70" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" fill="#f72585" opacity=".15" stroke="#f72585" stroke-width="1.5"/><line x1="35" y1="8" x2="35" y2="62" stroke="#e63946" stroke-width="2"/><line x1="8" y1="35" x2="62" y2="35" stroke="#e63946" stroke-width="2"/><circle cx="35" cy="35" r="6" fill="#e63946"/><text x="35" y="40" text-anchor="middle" font-size="12" fill="white">🏹</text></svg>`;
+  if(id==='bg_legend') return `<svg width="70" height="70" viewBox="0 0 70 70"><defs><radialGradient id="lgg1" cx="50%" cy="50%"><stop offset="0%" stop-color="#ffd60a"/><stop offset="100%" stop-color="#e85d04"/></radialGradient></defs><polygon points="35,5 44,28 68,28 50,44 57,68 35,54 13,68 20,44 2,28 26,28" fill="url(#lgg1)"/><text x="35" y="42" text-anchor="middle" font-size="14" fill="white">⚡</text></svg>`;
+  if(id==='bg_geo') return `<svg width="70" height="70" viewBox="0 0 70 70"><circle cx="35" cy="35" r="26" fill="none" stroke="#7209b7" stroke-width="2"/><ellipse cx="35" cy="35" rx="14" ry="26" fill="none" stroke="#7209b7" stroke-width="1.5"/><ellipse cx="35" cy="35" rx="26" ry="10" fill="none" stroke="#7209b7" stroke-width="1.5"/><path d="M20 22 Q30 18 40 24 Q36 32 28 30Z" fill="#7209b7" opacity=".6"/><text x="35" y="40" text-anchor="middle" font-size="12" fill="white">🗺️</text></svg>`;
+  if(id==='bg_master') return `<svg width="70" height="70" viewBox="0 0 70 70"><defs><linearGradient id="mg1"><stop offset="0%" stop-color="#a8edfc"/><stop offset="100%" stop-color="#4cc9f0"/></linearGradient></defs><polygon points="35,8 45,30 68,30 50,46 57,68 35,56 13,68 20,46 2,30 25,30" fill="url(#mg1)" opacity=".9"/><polygon points="35,18 41,32 56,32 44,42 48,58 35,50 22,58 26,42 14,32 29,32" fill="white" opacity=".3"/><text x="35" y="42" text-anchor="middle" font-size="14" fill="#023e8a">💎</text></svg>`;
+  if(id==='bg_africa') return `<svg width="70" height="70" viewBox="0 0 70 70"><circle cx="35" cy="35" r="28" fill="#2dc653" opacity=".2" stroke="#2dc653" stroke-width="1.5"/><path d="M30 12 Q38 15 40 22 Q48 20 50 28 Q55 35 50 45 Q45 55 35 58 Q25 55 22 48 Q16 40 20 30 Q24 20 30 12Z" fill="#2dc653" opacity=".8"/><text x="35" y="40" text-anchor="middle" font-size="14" fill="white">🌍</text></svg>`;
+
+  // POUVOIRS
+  if(id==='pw_hint') return `<svg width="70" height="70" viewBox="0 0 70 70"><circle cx="35" cy="30" r="18" fill="#ffd60a" opacity=".2" stroke="#ffd60a" stroke-width="1.5"/><path d="M35 15 Q48 18 46 30 Q44 38 38 42 L38 48 L32 48 L32 42 Q26 38 24 30 Q22 18 35 15Z" fill="#ffd60a"/><rect x="30" y="50" width="10" height="5" rx="2" fill="#ffd60a"/><line x1="35" y1="8" x2="35" y2="12" stroke="#ffd60a" stroke-width="2"/><line x1="50" y1="13" x2="47" y2="16" stroke="#ffd60a" stroke-width="2"/><line x1="20" y1="13" x2="23" y2="16" stroke="#ffd60a" stroke-width="2"/></svg>`;
+  if(id==='pw_shield') return `<svg width="70" height="70" viewBox="0 0 70 70"><path d="M35 10 L58 20 L58 38 Q58 55 35 62 Q12 55 12 38 L12 20 Z" fill="#4cc9f0" opacity=".3" stroke="#4cc9f0" stroke-width="2"/><path d="M35 18 L52 26 L52 38 Q52 50 35 56 Q18 50 18 38 L18 26 Z" fill="#4cc9f0" opacity=".5"/><path d="M27 37 L33 43 L45 31" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`;
+  if(id==='pw_double') return `<svg width="70" height="70" viewBox="0 0 70 70"><text x="20" y="42" font-family="Orbitron,monospace" font-size="26" font-weight="900" fill="#ffd60a">2x</text><circle cx="52" cy="20" r="10" fill="#f72585" opacity=".8"/><path d="M48 20 L52 15 L56 20 L52 25Z" fill="white"/></svg>`;
+  if(id==='pw_bomb') return `<svg width="70" height="70" viewBox="0 0 70 70"><circle cx="35" cy="40" r="22" fill="#1a1a2e" stroke="#e63946" stroke-width="2"/><rect x="33" y="16" width="4" height="12" rx="2" fill="#444"/><path d="M37 18 Q44 12 48 18" stroke="#ffd60a" stroke-width="3" fill="none"/><circle cx="48" cy="18" r="3" fill="#ffd60a"/><text x="35" y="46" text-anchor="middle" font-size="18" fill="#e63946">💥</text></svg>`;
+  if(id==='pw_swap') return `<svg width="70" height="70" viewBox="0 0 70 70"><circle cx="20" cy="35" r="12" fill="#7209b7" opacity=".7" stroke="#7209b7" stroke-width="1.5"/><circle cx="50" cy="35" r="12" fill="#f72585" opacity=".7" stroke="#f72585" stroke-width="1.5"/><path d="M30 28 L40 35 L30 42" stroke="white" stroke-width="2" fill="none"/><path d="M40 28 L30 35 L40 42" stroke="white" stroke-width="2" fill="none"/></svg>`;
+  if(id==='pw_spy') return `<svg width="70" height="70" viewBox="0 0 70 70"><circle cx="35" cy="35" r="24" fill="#1a1a2e" opacity=".8"/><ellipse cx="35" cy="35" rx="20" ry="12" fill="none" stroke="#4cc9f0" stroke-width="2"/><circle cx="35" cy="35" r="8" fill="#4cc9f0" opacity=".6"/><circle cx="35" cy="35" r="4" fill="white"/><circle cx="37" cy="33" r="1.5" fill="#023e8a"/></svg>`;
+
+  // MUSIQUE
+  if(id==='mu_bati') return `<svg width="70" height="70" viewBox="0 0 70 70"><rect width="70" height="70" rx="35" fill="#f72585" opacity=".2"/><text x="35" y="42" text-anchor="middle" font-size="28">🎵</text><rect x="14" y="52" width="8" height="14" rx="2" fill="#f72585" opacity=".8"/><rect x="26" y="46" width="8" height="20" rx="2" fill="#f72585" opacity=".7"/><rect x="38" y="48" width="8" height="18" rx="2" fill="#f72585" opacity=".8"/><rect x="50" y="44" width="8" height="22" rx="2" fill="#f72585" opacity=".6"/></svg>`;
+  if(id==='mu_stress') return `<svg width="70" height="70" viewBox="0 0 70 70"><rect width="70" height="70" rx="8" fill="#7209b7" opacity=".2"/><text x="35" y="35" text-anchor="middle" font-size="28">🎸</text><path d="M10 55 Q25 45 35 50 Q45 55 60 45" stroke="#7209b7" stroke-width="2.5" fill="none" opacity=".7"/><path d="M10 60 Q25 50 35 55 Q45 60 60 50" stroke="#4cc9f0" stroke-width="1.5" fill="none" opacity=".5"/></svg>`;
+  if(id==='mu_slash') return `<svg width="70" height="70" viewBox="0 0 70 70"><rect width="70" height="70" rx="8" fill="#e63946" opacity=".15"/><text x="35" y="35" text-anchor="middle" font-size="28">🔥</text><path d="M15 55 L25 45 L35 55 L45 40 L55 55" stroke="#e63946" stroke-width="3" fill="none" opacity=".8"/></svg>`;
+  if(id==='mu_artemas') return `<svg width="70" height="70" viewBox="0 0 70 70"><rect width="70" height="70" rx="35" fill="#c77dff" opacity=".2"/><text x="35" y="38" text-anchor="middle" font-size="24">💜</text><circle cx="35" cy="35" r="26" fill="none" stroke="#c77dff" stroke-width="1.5" opacity=".5" stroke-dasharray="4 3"/></svg>`;
+  if(id==='mu_silence') return `<svg width="70" height="70" viewBox="0 0 70 70"><polygon points="14,25 14,45 24,45 38,58 38,12 24,25" fill="#adb5bd"/><line x1="48" y1="22" x2="62" y2="48" stroke="#e63946" stroke-width="4" stroke-linecap="round"/><line x1="62" y1="22" x2="48" y2="48" stroke="#e63946" stroke-width="4" stroke-linecap="round"/></svg>`;
+
+  // Fallback
+  return `<div style="font-size:42px;line-height:1;">${item.icon}</div>`;
 }
 
 function filterShop(cat, btn) {
@@ -1905,6 +1987,21 @@ function goOnline() {
     return; 
   }
   console.log('[GÉOCODE] goOnline() — PID:', PID, 'name:', G.name);
+
+  // 0. Nettoyer les anciens salons expirés (> 2h)
+  db.ref('rooms').once('value').then(snap => {
+    const now = Date.now();
+    const updates = {};
+    snap.forEach(child => {
+      const room = child.val();
+      if(room.ts && (now - room.ts) > 7200000) { // 2 heures
+        updates[child.key] = null; // supprimer
+      }
+    });
+    if(Object.keys(updates).length > 0) {
+      db.ref('rooms').update(updates).catch(()=>{});
+    }
+  }).catch(()=>{});
 
   // 1. Enregistrer ma présence
   presenceRef = db.ref('presence/' + PID);
@@ -2099,81 +2196,430 @@ let localWS = null;      // WebSocket vers le serveur local
 let localServerIP = '';  // IP du serveur hôte
 let isLocalMode = false; // Flag mode local actif
 
+/* ============================================================
+   SERVEUR LOCAL INTÉGRÉ — WebRTC P2P + BroadcastChannel
+   Fonctionne dans le navigateur, sans Node.js ni Termux
+   L'hôte crée le serveur, les amis se connectent via le même réseau
+   ============================================================ */
+
+// État serveur local intégré
+let localServer = null;      // Serveur BroadcastChannel (hôte)
+let localRooms = new Map();  // Salons gérés par l'hôte
+let localChannel = null;     // Canal de communication
+let localRoomCode = null;    // Code du salon actuel
+
 function startLocal() {
-  showM('Mode Local — Hotspot',`
+  const name = G.name || 'JOUEUR';
+  showM('Mode Local — Sans Internet', `
     <div style="text-align:center;margin-bottom:16px;">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="1.5" style="margin:0 auto 8px;display:block;">
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="1.5" style="margin:0 auto 8px;display:block;">
         <path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/>
         <path d="M8.53 16.11a6 6 0 0 1 6.95 0"/>
         <circle cx="12" cy="20" r="1" fill="var(--success)"/>
       </svg>
-      <div style="font-family:var(--fh);font-size:14px;font-weight:900;color:var(--success);">ENTRE AMIS — LOCAL</div>
-      <div style="font-size:11px;color:var(--text2);margin-top:4px;line-height:1.6;">
-        Hotspot mobile · Bluetooth · WiFi local<br>
-        <strong style="color:var(--text);">Aucune connexion internet requise !</strong>
-      </div>
+      <div style="font-family:var(--fh);font-size:13px;font-weight:900;color:var(--success);">ENTRE AMIS — LOCAL</div>
+      <div style="font-size:10px;color:var(--text2);margin-top:3px;">Même téléphone · Même réseau WiFi · Hotspot</div>
     </div>
 
-    <div class="ig">
+    <div class="ig" style="margin-bottom:12px;">
       <div class="ilb">Ton pseudo</div>
-      <input class="inp" id="local-name" value="${G.name}" maxlength="16" oninput="this.value=this.value.toUpperCase()" style="font-family:var(--fh);letter-spacing:2px;">
+      <input class="inp" id="local-name" value="${name}" maxlength="16"
+        oninput="this.value=this.value.toUpperCase()"
+        style="font-family:var(--fh);letter-spacing:2px;">
     </div>
 
-    <!-- Onglets HÔTE / REJOINDRE -->
-    <div style="display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:14px;">
+    <!-- Tabs -->
+    <div style="display:flex;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:14px;">
       <div id="ltab-host" onclick="switchLocalTab('host')"
-        style="flex:1;padding:9px;text-align:center;background:var(--success);color:var(--bg);font-family:var(--fh);font-size:10px;letter-spacing:1px;cursor:pointer;">
-        CRÉER
+        style="flex:1;padding:10px;text-align:center;background:var(--success);color:var(--bg);
+        font-family:var(--fh);font-size:10px;letter-spacing:1px;cursor:pointer;transition:.2s;">
+        🏠 CRÉER
       </div>
       <div id="ltab-join" onclick="switchLocalTab('join')"
-        style="flex:1;padding:9px;text-align:center;background:var(--card);color:var(--text2);font-family:var(--fh);font-size:10px;letter-spacing:1px;cursor:pointer;">
-        REJOINDRE
+        style="flex:1;padding:10px;text-align:center;background:var(--card);color:var(--text2);
+        font-family:var(--fh);font-size:10px;letter-spacing:1px;cursor:pointer;transition:.2s;">
+        🔗 REJOINDRE
       </div>
     </div>
 
-    <!-- Panel HÔTE -->
+    <!-- Hôte panel -->
     <div id="local-host-panel">
-      <div style="background:rgba(6,214,160,0.08);border:1px solid var(--success);border-radius:8px;padding:12px;margin-bottom:12px;font-size:11px;color:var(--text2);line-height:1.7;">
-        <strong style="color:var(--success);">📱 Instructions pour l'hôte :</strong><br>
-        1. Active ton <strong>Point d'accès mobile</strong><br>
-        2. Lance <strong>server.js</strong> avec Termux ou Node.js<br>
-        3. Note l'IP affichée (ex: 192.168.43.1)<br>
-        4. Entre cette IP ci-dessous et clique Démarrer
+      <div style="background:rgba(6,214,160,0.1);border:1px solid var(--success);border-radius:8px;
+        padding:12px;margin-bottom:12px;font-size:11px;color:var(--text2);line-height:1.8;">
+        <strong style="color:var(--success);">Comment ça marche :</strong><br>
+        1. Clique <strong>Créer</strong> → un code apparaît<br>
+        2. Partage ce code à tes amis<br>
+        3. Eux cliquent <strong>Rejoindre</strong> et entrent le code<br>
+        4. Fonctionne sur le <strong>même WiFi ou hotspot</strong> !
       </div>
       <div class="ig">
-        <div class="ilb">IP du serveur (ton IP hotspot)</div>
-        <input class="inp" id="local-host-ip" placeholder="192.168.43.1" type="text"
-          style="font-family:var(--fm);font-size:16px;letter-spacing:1px;"
-          value="192.168.43.1">
+        <div class="ilb">Joueurs max</div>
+        <div style="display:flex;gap:8px;">
+          ${[2,3,4,6,8].map(n=>`<button onclick="this.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('active'));this.classList.add('active');window._localMax=${n};"
+            class="btn bs bxs${n===4?' active':''}" style="flex:1;${n===4?'background:var(--success);color:var(--bg);':''}">${n}</button>`).join('')}
+        </div>
       </div>
-      <button class="btn bp" style="width:100%;background:var(--success);margin-bottom:8px;" onclick="connectLocalHost()">
+      <button class="btn bp" style="width:100%;background:var(--success);margin-top:4px;" onclick="createLocalServerRoom()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-        Démarrer le serveur local
+        Créer le salon local
       </button>
     </div>
 
-    <!-- Panel REJOINDRE -->
+    <!-- Join panel -->
     <div id="local-join-panel" style="display:none;">
-      <div style="background:rgba(0,245,212,0.08);border:1px solid var(--accent);border-radius:8px;padding:12px;margin-bottom:12px;font-size:11px;color:var(--text2);line-height:1.7;">
-        <strong style="color:var(--accent);">📱 Instructions :</strong><br>
-        1. Connecte-toi au <strong>hotspot de l'hôte</strong><br>
-        2. Demande l'<strong>IP du serveur</strong> à l'hôte<br>
-        3. Entre cette IP ci-dessous
+      <div style="background:rgba(0,245,212,0.08);border:1px solid var(--accent);border-radius:8px;
+        padding:12px;margin-bottom:12px;font-size:11px;color:var(--text2);line-height:1.8;">
+        <strong style="color:var(--accent);">Comment rejoindre :</strong><br>
+        1. Demande le <strong>code</strong> à l'hôte<br>
+        2. Entre le code ci-dessous<br>
+        3. Ou entre l'<strong>IP</strong> si vous êtes sur le même réseau
       </div>
       <div class="ig">
-        <div class="ilb">IP du serveur de l'hôte</div>
-        <input class="inp" id="local-join-ip" placeholder="192.168.43.1" type="text"
-          style="font-family:var(--fm);font-size:16px;letter-spacing:1px;">
+        <div class="ilb">Code du salon (4 lettres)</div>
+        <input class="inp" id="local-join-code" placeholder="A B C D" maxlength="4"
+          style="font-family:var(--fh);letter-spacing:8px;font-size:24px;text-align:center;text-transform:uppercase;"
+          oninput="this.value=this.value.toUpperCase()">
       </div>
-      <button class="btn bp" style="width:100%;margin-bottom:8px;" onclick="connectLocalJoin()">
+      <div style="text-align:center;font-size:10px;color:var(--text2);margin:6px 0;">— ou via IP réseau —</div>
+      <div class="ig">
+        <div class="ilb">IP du serveur (si même réseau)</div>
+        <input class="inp" id="local-join-ip" placeholder="192.168.43.1" type="text"
+          style="font-family:var(--fm);font-size:15px;letter-spacing:1px;">
+      </div>
+      <button class="btn bp" style="width:100%;margin-top:4px;" onclick="joinLocalServerRoom()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-        Me connecter au serveur
+        Rejoindre
       </button>
     </div>
 
-    <button class="btn bs" style="width:100%;" onclick="closeM()">Annuler</button>
+    <button class="btn bs" style="width:100%;margin-top:10px;" onclick="closeM()">Annuler</button>
   `);
+  window._localMax = 4;
 }
+
+/* --- Créer un salon local (hôte) --- */
+function createLocalServerRoom() {
+  const nameEl = document.getElementById('local-name');
+  const name = (nameEl?.value || G.name).trim().toUpperCase();
+  if(!name) { toast('❌ Entre ton pseudo !', 'e'); return; }
+  G.name = name; localStorage.setItem('gc-name', name);
+  const maxPlayers = window._localMax || 4;
+  closeM();
+
+  // Générer un code unique
+  const code = Array.from({length:4}, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ'[Math.floor(Math.random()*24)]).join('');
+  localRoomCode = code;
+  isLocalMode = true;
+  G.isSolo = false;
+  G.isHost = true;
+  G.roomCode = code;
+
+  // Initialiser le salon local en mémoire (hôte = serveur)
+  localRooms.set(code, {
+    code, host: PID, maxPlayers,
+    status: 'waiting', ts: Date.now(),
+    players: new Map([[PID, {
+      pid: PID, name, country: '', score: 0,
+      eliminated: false, confirmed: false
+    }]]),
+    gameState: { usedLetters: [], idx: 0, turn: 1, round: 1 },
+  });
+
+  // Canal BroadcastChannel pour comm locale (même appareil/onglet)
+  setupLocalChannel(code);
+
+  // Afficher le lobby
+  const rcEl = document.getElementById('rcode');
+  if(rcEl) rcEl.textContent = code;
+  showSc('lobby');
+  updateLocalLobby(code);
+  toast('🏠 Salon local créé : ' + code, 's', 3000);
+
+  // Si Firebase disponible — publier le salon pour que les amis trouvent via IP
+  if(fbOK && db) {
+    db.ref('local_rooms/' + code).set({
+      code, hostName: name, maxPlayers, ts: Date.now(),
+      hostIp: 'local', status: 'waiting'
+    });
+    db.ref('local_rooms/' + code).onDisconnect().remove();
+  }
+
+  try { playSound('join'); } catch(e) {}
+  addN('Salon local ' + code + ' créé ! Partage ce code.');
+}
+
+/* --- Rejoindre un salon local --- */
+function joinLocalServerRoom() {
+  const nameEl = document.getElementById('local-name');
+  const name = (nameEl?.value || G.name).trim().toUpperCase();
+  const codeEl = document.getElementById('local-join-code');
+  const code = (codeEl?.value || '').trim().toUpperCase();
+  const ipEl = document.getElementById('local-join-ip');
+  const ip = (ipEl?.value || '').trim();
+
+  if(!name) { toast('❌ Entre ton pseudo !', 'e'); return; }
+  G.name = name; localStorage.setItem('gc-name', name);
+  closeM();
+
+  // Si une IP est fournie → connexion WebSocket classique
+  if(ip) {
+    isLocalMode = true;
+    G.isSolo = false;
+    G.isHost = false;
+    connectToLocalServer(ip, () => {
+      if(code) sendLocal({ type: 'join_room', code, pid: PID, name });
+      else sendLocal({ type: 'list_rooms' });
+    });
+    return;
+  }
+
+  // Sinon → chercher via BroadcastChannel (même appareil) ou Firebase
+  if(!code) { toast('❌ Entre un code ou une IP !', 'e'); return; }
+  
+  localRoomCode = code;
+  isLocalMode = true;
+  G.isSolo = false;
+  G.isHost = false;
+
+  // Vérifier si le salon existe localement (même appareil)
+  if(localRooms.has(code)) {
+    joinLocalRoomMemory(code, name);
+    return;
+  }
+
+  // Chercher via BroadcastChannel
+  setupLocalChannel(code);
+  sendLocalChannel({ type: 'join_room', code, pid: PID, name });
+  toast('🔄 Connexion au salon ' + code + '...', '', 2000);
+
+  // Timeout si pas de réponse
+  setTimeout(() => {
+    if(!G.started && document.getElementById('sc-lobby')?.style.display === '') {
+      toast("❌ Salon introuvable. Vérifie le code ou l'IP.", "e", 4000);
+      isLocalMode = false;
+    }
+  }, 5000);
+}
+
+/* --- Rejoindre un salon en mémoire (même appareil, hôte et joueur) --- */
+function joinLocalRoomMemory(code, name) {
+  const room = localRooms.get(code);
+  if(!room) { toast('❌ Salon introuvable', 'e'); return; }
+  if(room.players.size >= room.maxPlayers) { toast('❌ Salon complet !', 'e'); return; }
+
+  room.players.set(PID, { pid: PID, name, country: '', score: 0, eliminated: false, confirmed: false });
+  G.roomCode = code;
+  const rcEl = document.getElementById('rcode');
+  if(rcEl) rcEl.textContent = code;
+  showSc('lobby');
+  updateLocalLobby(code);
+  // Notifier l'hôte
+  sendLocalChannel({ type: 'player_joined', pid: PID, name, code });
+  toast('✅ Rejoint le salon ' + code, 's', 2000);
+}
+
+/* --- Canal BroadcastChannel local --- */
+function setupLocalChannel(code) {
+  if(localChannel) localChannel.close();
+  localChannel = new BroadcastChannel('geocode_local_' + code);
+  localChannel.onmessage = (event) => {
+    const msg = event.data;
+    if(!msg || !msg.type) return;
+    // L'hôte reçoit les messages et les distribue
+    if(G.isHost && localRooms.has(localRoomCode)) {
+      handleLocalChannelAsHost(msg);
+    } else {
+      handleLocalMessage(msg);
+    }
+  };
+}
+
+function sendLocalChannel(msg) {
+  if(localChannel) localChannel.postMessage(msg);
+  // Si on a un WS, envoyer aussi
+  if(localWS && localWS.readyState === 1) sendLocal(msg);
+}
+
+/* --- Hôte gère les messages du canal --- */
+function handleLocalChannelAsHost(msg) {
+  const room = localRooms.get(localRoomCode);
+  if(!room) return;
+
+  if(msg.type === 'join_room' || msg.type === 'player_joined') {
+    if(room.status !== 'waiting') return;
+    if(!room.players.has(msg.pid)) {
+      room.players.set(msg.pid, { pid: msg.pid, name: msg.name, country: '', score: 0, eliminated: false, confirmed: false });
+    }
+    updateLocalLobby(room.code);
+    // Diffuser l'état du salon à tous
+    broadcastLocalRoom(room);
+    return;
+  }
+
+  if(msg.type === 'set_country') {
+    const p = room.players.get(msg.pid);
+    if(p) { p.country = msg.country; p.confirmed = true; }
+    broadcastLocalRoom(room);
+    const allReady = [...room.players.values()].every(p => p.confirmed);
+    if(allReady) broadcastLocalMsg({ type: 'all_confirmed' });
+    return;
+  }
+
+  if(msg.type === 'play_letter') {
+    processLocalLetter(room, msg.pid, msg.letter);
+    return;
+  }
+
+  if(msg.type === 'guess_country') {
+    processLocalGuess(room, msg.pid, msg.targetPid, msg.guess);
+    return;
+  }
+}
+
+function broadcastLocalRoom(room) {
+  const state = {
+    type: 'room_state', code: room.code, host: room.host,
+    maxPlayers: room.maxPlayers, status: room.status,
+    players: [...room.players.values()].map(p => ({
+      pid: p.pid, name: p.name, confirmed: p.confirmed,
+      eliminated: p.eliminated, score: p.score,
+      countryLen: p.country ? p.country.replace(/\s/g,'').length : 0,
+    }))
+  };
+  if(localChannel) localChannel.postMessage(state);
+  handleLocalMessage(state); // Hôte aussi met à jour son UI
+}
+
+function broadcastLocalMsg(msg) {
+  if(localChannel) localChannel.postMessage(msg);
+  handleLocalMessage(msg);
+}
+
+/* --- Logique jeu local (hôte calcule) --- */
+function processLocalLetter(room, byPid, letter) {
+  if(room.status !== 'playing') return;
+  const gs = room.gameState;
+  if(gs.usedLetters.includes(letter)) return;
+  gs.usedLetters.push(letter);
+  gs.turn++;
+
+  const found = [];
+  for(const [pid, p] of room.players) {
+    if(!p.eliminated && p.country && p.country.includes(letter)) {
+      const positions = [];
+      p.country.split('').forEach((ch,i) => { if(ch===letter) positions.push(i+1); });
+      found.push({ pid, name: p.name, positions });
+    }
+  }
+
+  const active = [...room.players.entries()].filter(([,p])=>!p.eliminated).map(([pid])=>pid);
+  const curIdx = active.indexOf(byPid);
+  const nextPid = active[(curIdx+1) % active.length];
+
+  broadcastLocalMsg({
+    type: 'letter_played', byPid, byName: room.players.get(byPid)?.name,
+    letter, found, nextPlayerPid: nextPid,
+    gameState: { ...gs }
+  });
+}
+
+function processLocalGuess(room, byPid, targetPid, guess) {
+  const target = room.players.get(targetPid);
+  if(!target || target.eliminated) return;
+  if(target.country === guess) {
+    target.eliminated = true;
+    const guesser = room.players.get(byPid);
+    const pts = 300;
+    if(guesser) guesser.score += pts;
+    broadcastLocalMsg({
+      type: 'player_eliminated',
+      eliminatedPid: targetPid, eliminatedName: target.name, eliminatedCountry: target.country,
+      byPid, byName: guesser?.name, points: pts
+    });
+    // Vérifier fin
+    const alive = [...room.players.values()].filter(p=>!p.eliminated);
+    if(alive.length <= 1) {
+      room.status = 'ended';
+      broadcastLocalMsg({
+        type: 'game_over',
+        winnerPid: alive[0] ? [...room.players.entries()].find(([,p])=>!p.eliminated)?.[0] : null,
+        winnerName: alive[0]?.name || '?',
+        scores: [...room.players.values()].map(p=>({ pid:p.pid, name:p.name, score:p.score, country:p.country, eliminated:p.eliminated }))
+      });
+    }
+  } else {
+    if(localChannel) localChannel.postMessage({ type:'wrong_guess', guess, pid:byPid });
+    broadcastLocalMsg({ type:'guess_failed', byName: room.players.get(byPid)?.name, guess });
+  }
+}
+
+/* --- Lancer la partie locale (hôte) --- */
+function hostStartLocal() {
+  const room = localRooms.get(localRoomCode);
+  if(!room) return;
+  if(!G.cOK) { toast("❌ Confirme ton pays d'abord !", "e"); return; }
+  const all = [...room.players.values()];
+  if(!all.every(p=>p.confirmed)) { toast('❌ Tous doivent choisir leur pays !', 'e',3000); return; }
+  room.status = 'playing';
+  const pidList = [...room.players.keys()];
+  room.gameState = { usedLetters:[], idx:0, turn:1, round:1 };
+
+  // Envoyer à chaque joueur son pays via le canal
+  for(const [pid, p] of room.players) {
+    const playersList = [...room.players.values()].map((pp,i) => ({
+      pid:pp.pid, name:pp.name, isMe: pp.pid===pid, isBot:false,
+      countryLen: pp.country.replace(/\s/g,'').length,
+      score:0, eliminated:false
+    }));
+    const startMsg = {
+      type:'game_started', yourCountry: p.country,
+      players: playersList, gameState: room.gameState,
+      currentPlayerPid: pidList[0]
+    };
+    if(pid === PID) { handleLocalMessage(startMsg); }
+    else { if(localChannel) localChannel.postMessage({...startMsg, forPid: pid}); }
+  }
+  if(fbOK && db) db.ref('local_rooms/' + localRoomCode).remove().catch(()=>{});
+}
+
+/* --- Mettre à jour le lobby local --- */
+function updateLocalLobby(code) {
+  const room = localRooms.get(code);
+  if(!room) return;
+  const rcEl = document.getElementById('rcode');
+  if(rcEl) rcEl.textContent = code;
+  const rcountEl = document.getElementById('rcount');
+  if(rcountEl) rcountEl.textContent = room.players.size + '/' + room.maxPlayers + ' joueurs';
+  const lprog = document.getElementById('lprog');
+  if(lprog) lprog.style.width = (room.players.size/room.maxPlayers*100)+'%';
+  const ls = document.getElementById('lstatus');
+  if(ls) ls.textContent = room.players.size >= 2 ? '✅ Prêt ! Choisissez vos pays.' : '⏳ En attente des joueurs...';
+  // Joueurs
+  const pgrid = document.getElementById('pgrid');
+  if(pgrid) {
+    const COLORS = ['#00f5d4','#f72585','#7209b7','#ffd60a','#4cc9f0'];
+    pgrid.innerHTML = [...room.players.values()].map((p,i) => `
+      <div class="pcard" style="border-color:${COLORS[i%COLORS.length]}44;">
+        <div class="pav" style="background:${COLORS[i%COLORS.length]}">${p.name[0]}</div>
+        <div class="pn">${p.name}${p.pid===PID?' (toi)':''}</div>
+        <div class="ps">${p.confirmed?'✅':'⏳'}</div>
+      </div>`).join('');
+  }
+  // Choix pays si >= 2
+  if(room.players.size >= 2) {
+    const cc = document.getElementById('cc-sec');
+    if(cc) cc.style.display = 'block';
+  }
+  // Bouton lancer si hôte
+  const lact = document.getElementById('lact');
+  if(lact && G.isHost) {
+    lact.innerHTML = room.players.size >= 2
+      ? '<button class="btn bg" style="width:100%;" onclick="hostStartLocal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg> LANCER LA PARTIE</button>'
+      : '<div style="text-align:center;font-size:11px;color:var(--text2);">Attends au moins 2 joueurs</div>';
+  }
+}
+
+/* --- Surcharge cfC pour envoyer via canal local --- */
 
 function switchLocalTab(tab) {
   const hostTab = document.getElementById('ltab-host');
@@ -2226,40 +2672,90 @@ function connectLocalJoin() {
 }
 
 function connectToLocalServer(ip, onConnected) {
-  const wsUrl = `ws://${ip}:3000`;
-  toast('🔄 Connexion à ' + ip + '...','',2500);
+  const port = 3000;
+  const wsUrl = 'ws://' + ip + ':' + port;
+  localServerIP = ip;
 
+  toast('🔄 Connexion à ' + ip + '...', '', 2000);
+  console.log('[LOCAL] Connexion WS:', wsUrl);
+
+  // Tester d'abord via HTTP ping
+  fetch('http://' + ip + ':' + port + '/ping', { signal: AbortSignal.timeout(3000) })
+    .then(r => r.json())
+    .then(data => {
+      if(data.ok) {
+        console.log('[LOCAL] Serveur GÉOCODE détecté ✅');
+        openLocalWS(wsUrl, onConnected);
+      }
+    })
+    .catch(() => {
+      // Pas de fetch → essayer directement le WS
+      openLocalWS(wsUrl, onConnected);
+    });
+}
+
+function openLocalWS(wsUrl, onConnected) {
   try {
     localWS = new WebSocket(wsUrl);
 
     localWS.onopen = () => {
-      console.log('[LOCAL] Connecté à', wsUrl);
-      toast('✅ Serveur local connecté !','s',2500);
-      // Envoyer présence
-      sendLocal({ type:'presence', pid:PID, name:G.name, wins:G.wins, elims:G.elims });
+      console.log('[LOCAL] WS connecté ✅');
+      isLocalMode = true;
+      // S'annoncer au serveur
+      sendLocal({ type: 'presence', pid: PID, name: G.name, wins: G.wins||0, elims: G.elims||0 });
+      toast('✅ Serveur local connecté !', 's', 2500);
       if(onConnected) onConnected();
+      // Ping keepalive toutes les 20s
+      clearInterval(window._localPing);
+      window._localPing = setInterval(() => {
+        if(localWS && localWS.readyState === 1) sendLocal({ type: 'ping' });
+        else clearInterval(window._localPing);
+      }, 20000);
     };
 
     localWS.onmessage = (event) => {
       try {
         const msg = JSON.parse(event.data);
         handleLocalMessage(msg);
-      } catch(e) { console.error('[LOCAL] Parse error:', e); }
+      } catch(e) { console.error('[LOCAL] Parse:', e); }
     };
 
-    localWS.onclose = () => {
-      console.log('[LOCAL] Déconnecté');
-      if(isLocalMode) toast('⚠️ Connexion locale perdue','e',3000);
+    localWS.onclose = (e) => {
+      console.log('[LOCAL] Déconnecté:', e.code, e.reason);
+      clearInterval(window._localPing);
+      if(isLocalMode && !G.over) {
+        toast('⚠️ Connexion locale perdue — retente dans 3s', 'e', 3000);
+        setTimeout(() => {
+          if(isLocalMode && !G.over) openLocalWS(wsUrl, null);
+        }, 3000);
+      }
       localWS = null;
     };
 
-    localWS.onerror = (e) => {
-      console.error('[LOCAL] Erreur WS:', e);
-      toast('❌ Impossible de se connecter à ' + ip,'e',4000);
-      localWS = null;
+    localWS.onerror = () => {
+      toast('❌ Impossible de joindre ' + localServerIP + ':3000', 'e', 4000);
+      showM('Erreur connexion locale', `
+        <div style="font-size:12px;color:var(--text2);line-height:1.8;margin-bottom:12px;">
+          <strong style="color:var(--danger);">Impossible de se connecter</strong><br>
+          Vérifie que :<br>
+          1. Le hotspot de l'hôte est activé<br>
+          2. Tu es connecté à ce hotspot<br>
+          3. Le serveur <strong>node server.js</strong> tourne<br>
+          4. L'IP est correcte : <strong>${localServerIP}</strong>
+        </div>
+        <div class="ig"><div class="ilb">Corriger l'IP</div>
+          <input class="inp" id="retry-ip" value="${localServerIP}" style="font-family:var(--fm);font-size:16px;">
+        </div>
+        <button class="btn bp" style="width:100%;margin-bottom:8px;" onclick="
+          const ip=document.getElementById('retry-ip').value.trim();
+          closeM(); connectToLocalServer(ip, null);
+        ">🔄 Réessayer</button>
+        <button class="btn bs" style="width:100%;" onclick="closeM()">Annuler</button>
+      `);
     };
+
   } catch(e) {
-    toast('❌ Erreur connexion: ' + e.message,'e',4000);
+    toast('❌ WebSocket: ' + e.message, 'e', 4000);
   }
 }
 
@@ -2272,176 +2768,262 @@ function sendLocal(msg) {
 }
 
 function handleLocalMessage(msg) {
+  const COLORS = ['#00f5d4','#f72585','#7209b7','#ffd60a','#4cc9f0','#06d6a0','#ff6b35','#bf5fff'];
+
   switch(msg.type) {
+
+    case 'pong':
+      // Keepalive OK
+      break;
+
+    case 'online_list':
+      // Mettre à jour la liste joueurs en ligne locaux
+      renderLocalOnlinePlayers(msg.players);
+      break;
+
+    case 'rooms_list':
+      renderLocalRoomsList(msg.rooms);
+      break;
 
     case 'room_created':
       G.roomCode = msg.code;
       G.isHost = true;
-      setupLobby();
+      // Afficher le lobby
+      const rcEl = document.getElementById('rcode');
+      if(rcEl) rcEl.textContent = msg.code;
       showSc('lobby');
-      toast(`🏠 Salon local créé : ${msg.code}`,'s');
-      addN(`Salon local ${msg.code} créé !`);
+      toast('🏠 Salon local créé : ' + msg.code, 's', 3000);
+      addN('Salon local ' + msg.code + ' créé !');
+      try { playSound('join'); } catch(e) {}
       break;
 
     case 'room_joined':
       G.roomCode = msg.code;
       G.isHost = false;
-      setupLobby();
+      const rcEl2 = document.getElementById('rcode');
+      if(rcEl2) rcEl2.textContent = msg.code;
       showSc('lobby');
-      toast(`✅ Rejoint le salon ${msg.code}`,'s');
+      toast('✅ Rejoint le salon ' + msg.code, 's', 2500);
       break;
 
-    case 'room_state':
-      // Mettre à jour la liste des joueurs dans le lobby
-      G.maxPlayers = msg.maxPlayers;
-      G.players = msg.players.map(p => ({
-        ...p, id: p.pid, isMe: p.pid === PID, isBot: false,
-        color: p.pid === PID ? '#00f5d4' : ['#f72585','#7209b7','#ffd60a','#4cc9f0'][
-          msg.players.indexOf(msg.players.find(x=>x.pid===p.pid)) % 4
-        ]
+    case 'room_state': {
+      G.maxPlayers = msg.maxPlayers || 4;
+      G.players = msg.players.map((p, i) => ({
+        id: p.pid, name: p.name, isMe: p.pid === PID, isBot: false,
+        country: '', score: p.score || 0, eliminated: p.eliminated || false,
+        confirmed: p.confirmed || false, countryLen: p.countryLen || 0,
+        color: COLORS[i % COLORS.length],
       }));
       renderPlayers();
       const rc = document.getElementById('rcount');
-      if(rc) rc.textContent = G.players.length+'/'+G.maxPlayers+' joueurs';
-      const lprog = document.getElementById('lprog');
-      if(lprog) lprog.style.width = (G.players.length/G.maxPlayers*100)+'%';
-      // Montrer choix pays si >= 2 joueurs
+      if(rc) rc.textContent = G.players.length + '/' + G.maxPlayers + ' joueurs connectés';
+      const lp = document.getElementById('lprog');
+      if(lp) lp.style.width = (G.players.length / G.maxPlayers * 100) + '%';
+      const ls = document.getElementById('lstatus');
+      if(ls) ls.textContent = G.players.length >= 2
+        ? '✅ Prêt à jouer — choisissez vos pays !'
+        : '⏳ En attente des joueurs...';
+      // Montrer choix pays si >= 2
       if(G.players.length >= 2 && msg.status === 'waiting') {
         const cc = document.getElementById('cc-sec');
-        if(cc) cc.style.display='block';
+        if(cc) cc.style.display = 'block';
+      }
+      // Montrer bouton lancer si hôte
+      const lact = document.getElementById('lact');
+      if(lact && G.isHost && msg.status === 'waiting') {
+        lact.innerHTML = G.players.length >= 2
+          ? '<button class="btn bg" style="width:100%;" onclick="hostStartLocal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg> LANCER LA PARTIE</button>'
+          : '<div style="text-align:center;font-size:11px;color:var(--text2);">Attends au moins 2 joueurs</div>';
       }
       break;
-
-    case 'rooms_list':
-      // Afficher les salons locaux dans l'onglet Rejoindre
-      showLocalRooms(msg.rooms);
-      break;
+    }
 
     case 'player_confirmed':
-      addLog(`✅ ${msg.name} a choisi son pays (${msg.countryLen} lettres)`,'s');
+      addLog('✅ ' + msg.name + ' a choisi son pays (' + msg.countryLen + ' lettres)', 's');
+      toast('✅ ' + msg.name + ' est prêt !', 's', 2000);
       break;
 
-    case 'game_started':
-      // La partie commence
+    case 'all_confirmed':
+      toast('🎮 Tous les joueurs sont prêts !', 'g', 2000);
+      if(G.isHost) {
+        const lact = document.getElementById('lact');
+        if(lact) lact.innerHTML = '<button class="btn bg" style="width:100%;" onclick="hostStartLocal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg> LANCER LA PARTIE</button>';
+      }
+      break;
+
+    case 'game_started': {
+      G.country = msg.yourCountry;
       G.myCountry = msg.yourCountry;
-      G.players = msg.players.map(p => ({
-        ...p, id:p.pid, isMe:p.pid===PID, isBot:false,
-        country: p.pid===PID ? msg.yourCountry : '',
-        color: p.pid===PID ? '#00f5d4' : ['#f72585','#7209b7','#ffd60a','#4cc9f0'][
-          msg.players.indexOf(msg.players.find(x=>x.pid===p.pid))%4
-        ]
+      G.cOK = true;
+      G.players = msg.players.map((p, i) => ({
+        id: p.pid, name: p.name, isMe: p.pid === PID, isBot: false,
+        country: p.pid === PID ? msg.yourCountry : '',
+        countryLen: p.countryLen || 0,
+        score: 0, eliminated: false, color: COLORS[i % COLORS.length],
       }));
-      G.started=true; G.over=false; G.elim=false;
-      G.used=new Set(msg.gameState?.usedLetters||[]);
-      G.idx=msg.gameState?.currentIdx||0;
-      G.turn=msg.gameState?.turn||1;
-      G.round=msg.gameState?.round||1;
-      // Trouver qui joue en premier
-      const firstPid = msg.currentPlayerPid;
-      G.curPlayerPid = firstPid;
+      G.started = true; G.over = false; G.elim = false; G.isSolo = false;
+      G.used = new Set(msg.gameState?.usedLetters || []);
+      G.turn = msg.gameState?.turn || 1;
+      G.round = msg.gameState?.round || 1;
+      // Trouver l'index du premier joueur
+      const firstIdx = G.players.findIndex(p => p.id === msg.currentPlayerPid);
+      G.idx = firstIdx >= 0 ? firstIdx : 0;
+      G.curPlayerPid = msg.currentPlayerPid;
       document.getElementById('ebanner')?.classList.remove('on');
-      renderGame();
-      showSc('game');
-      toast('🎮 Partie locale lancée !','g',3000);
+      renderGame(); showSc('game');
+      toast('🎮 Partie locale lancée !', 'g', 3000);
+      try { playSound('start'); } catch(e) {}
+      // Vérifier si c'est mon tour
+      if(G.players[G.idx]?.isMe) toast('⚡ C\'est ton tour ! Joue la première lettre.', 'g', 3000);
       break;
+    }
 
-    case 'letter_played':
-      // Un joueur a joué une lettre
+    case 'letter_played': {
       G.used.add(msg.letter);
-      if(msg.found && msg.found.length > 0) {
+      const foundOthers = msg.found.filter(f => f.pid !== PID);
+      if(msg.found.length > 0) {
         msg.found.forEach(f => {
-          addLog(`✅ "${msg.letter}" chez ${f.name} — pos: ${f.positions.join(', ')}`,'s');
-          // Mettre à jour les cases du joueur adverse
-          const p = G.players.find(x=>x.id===f.pid);
-          // Les cases s'affichent via renderOp() puisque G.used est mis à jour
+          addLog('✅ "' + msg.letter + '" chez ' + f.name + ' — pos: ' + f.positions.join(', '), 's');
         });
-        toast(`✅ "${msg.letter}" dans ${msg.found.length} pays !`,'s');
+        toast('✅ "' + msg.letter + '" dans ' + msg.found.length + ' pays !', 's');
+        try { playSound('found'); } catch(e) {}
       } else {
-        addLog(`❌ "${msg.letter}" — nulle part`,'e');
-        toast(`❌ "${msg.letter}" nulle part !`,'e');
+        addLog('❌ "' + msg.letter + '" — nulle part', 'e');
+        toast('❌ "' + msg.letter + '" nulle part !', 'e');
+        try { playSound('miss'); } catch(e) {}
       }
-      // Vérifier si ma lettre est révélée
-      if(G.myCountry.includes(msg.letter)) {
-        addLog(`⚠️ "${msg.letter}" est dans TON pays !`,'w');
+      // Vérifier ma lettre
+      if(G.myCountry && G.myCountry.includes(msg.letter)) {
+        addLog('⚠️ "' + msg.letter + '" est dans TON pays !', 'w');
+        try { playSound('reveal'); } catch(e) {}
       }
-      // Mettre à jour qui joue
+      // Passer au joueur suivant
+      const nextIdx = G.players.findIndex(p => p.id === msg.nextPlayerPid);
+      if(nextIdx >= 0) G.idx = nextIdx;
       G.curPlayerPid = msg.nextPlayerPid;
-      // Trouver l'index du prochain joueur
-      const nextIdx = G.players.findIndex(p=>p.id===msg.nextPlayerPid);
-      if(nextIdx>=0) G.idx=nextIdx;
-      G.turn=msg.gameState?.turn||G.turn+1;
-      renderMyLetters(); renderOp(); renderKB(); updT();
+      G.turn = (msg.gameState?.turn) || G.turn + 1;
+      renderML(); renderOp(); renderKB(); updT();
+      // Mon tour ?
+      if(G.players[G.idx]?.isMe && !G.elim) {
+        toast('⚡ C\'est TON TOUR !', 'g', 2500);
+        try { playSound('myturn'); } catch(e) {}
+      }
       break;
+    }
 
-    case 'player_eliminated':
-      const elim = G.players.find(p=>p.id===msg.eliminatedPid);
-      if(elim) elim.eliminated=true;
-      addLog(`💀 ${msg.byName} a deviné le pays de ${msg.eliminatedName} ! +${msg.points} pts`,'s');
-      if(msg.eliminatedPid===PID) {
-        G.elim=true;
+    case 'player_eliminated': {
+      const elimP = G.players.find(p => p.id === msg.eliminatedPid);
+      if(elimP) { elimP.eliminated = true; elimP.country = msg.eliminatedCountry; }
+      addLog('💀 ' + msg.byName + ' a deviné "' + msg.eliminatedCountry + '" de ' + msg.eliminatedName + ' ! +' + msg.points + ' pts', 's');
+      if(msg.eliminatedPid === PID) {
+        G.elim = true;
         document.getElementById('ebanner')?.classList.add('on');
-        document.getElementById('mta').style.display='none';
-        toast(`💀 ${msg.byName} a deviné ton pays !`,'e',4000);
-      } else if(msg.byPid===PID) {
-        G.score+=msg.points; G.pts+=msg.points; G.elims++;
+        const mta = document.getElementById('mta');
+        if(mta) mta.style.display = 'none';
+        toast('💀 ' + msg.byName + ' a deviné ton pays !', 'e', 4000);
+        try { playSound('eliminated'); } catch(e) {}
+      } else if(msg.byPid === PID) {
+        G.score += msg.points; G.pts = (G.pts||0) + msg.points; G.elims++;
         updStats();
-        toast(`🎯 Bravo ! +${msg.points} pts`,'g',3000);
+        toast('🎯 Bravo ! +' + msg.points + ' pts', 'g', 3000);
+        try { playSound('eliminate'); earnCoins(3, 'Élimination !'); } catch(e) {}
       } else {
-        toast(`💀 ${msg.eliminatedName} éliminé par ${msg.byName}`,'',2500);
+        toast('💀 ' + msg.eliminatedName + ' éliminé par ' + msg.byName, '', 2500);
       }
       renderOp(); updT();
       break;
-
-    case 'country_revealed':
-      const rev = G.players.find(p=>p.id===msg.pid);
-      if(rev) rev.country=msg.country;
-      renderOp();
-      break;
+    }
 
     case 'wrong_guess':
-      toast(`❌ "${msg.guess}" — Mauvaise réponse`,'e');
+      toast('❌ "' + msg.guess + '" — Mauvaise réponse', 'e', 2500);
       break;
 
     case 'guess_failed':
-      addLog(`❌ ${msg.byName} tente "${msg.guess}" — mauvais`,'e');
+      addLog('❌ ' + msg.byName + ' tente "' + msg.guess + '" — raté', 'e');
       break;
 
     case 'player_left':
-      addLog(`👋 ${msg.name} a quitté la partie`,'w');
-      toast(`${msg.name} a quitté`,'',2000);
+      addLog('👋 ' + msg.name + ' a quitté', 'w');
+      toast(msg.name + ' a quitté la partie', '', 2000);
+      break;
+
+    case 'chat':
+      addLog('💬 ' + msg.from + ': ' + msg.text, '');
       break;
 
     case 'notification':
       addN(msg.msg);
-      toast(msg.msg,'',2500);
+      toast(msg.msg, '', 2500);
       break;
 
-    case 'game_over':
-      G.over=true;
-      // Mettre à jour les scores
+    case 'game_over': {
+      G.over = true;
+      try { stopMusic(); } catch(e) {}
       if(msg.scores) {
-        msg.scores.forEach(s=>{
-          const p=G.players.find(x=>x.id===s.pid);
-          if(p){p.score=s.score;p.country=s.country;p.eliminated=s.eliminated;}
+        msg.scores.forEach(s => {
+          const p = G.players.find(x => x.id === s.pid);
+          if(p) { p.score = s.score; p.country = s.country; p.eliminated = s.eliminated; }
         });
-        if(msg.winnerPid===PID){
-          G.wins++; updStats(); showConfetti();
-          toast('🏆 TU AS GAGNÉ !','g',5000);
-        } else {
-          toast(`🏆 ${msg.winnerName} a gagné !`,'',4000);
-        }
       }
-      setTimeout(()=>{ showScores(); navTo('scores'); },3000);
+      if(msg.winnerPid === PID) {
+        G.wins++; updStats(); showConfetti();
+        toast('🏆 TU AS GAGNÉ !', 'g', 5000);
+        try { playSound('victory'); earnCoins(10, 'Victoire !'); } catch(e) {}
+      } else {
+        toast('🏆 ' + msg.winnerName + ' a gagné !', '', 4000);
+        try { playSound('eliminated'); } catch(e) {}
+      }
+      setTimeout(() => { isLocalMode = false; navTo('home'); }, 4000);
       break;
+    }
 
     case 'error':
-      toast('❌ ' + msg.msg,'e',3000);
-      break;
-
-    case 'player_online':
-      // Un joueur en ligne (pour la liste)
+      toast('❌ ' + msg.msg, 'e', 3500);
       break;
   }
+}
+
+/* --- Fonctions auxiliaires Local --- */
+function renderLocalOnlinePlayers(players) {
+  const list = document.getElementById('online-players-list');
+  if(!list) return;
+  const others = players.filter(p => p.pid !== PID);
+  if(!others.length) {
+    list.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text3);font-size:12px;">😴 Aucun autre joueur en ligne sur ce serveur</div>';
+    return;
+  }
+  list.innerHTML = others.map(p => `
+    <div class="card" style="margin-bottom:8px;display:flex;align-items:center;gap:10px;">
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:14px;font-weight:900;color:var(--bg);">${(p.name||'?')[0]}</div>
+      <div style="flex:1;"><div style="font-weight:700;font-size:13px;">${p.name}</div><div style="font-size:10px;color:var(--success);">🟢 Local</div></div>
+    </div>`).join('');
+}
+
+function renderLocalRoomsList(rooms) {
+  const list = document.getElementById('open-rooms-list');
+  if(!list) return;
+  if(!rooms || !rooms.length) {
+    list.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text3);font-size:12px;">Aucun salon local ouvert</div>';
+    return;
+  }
+  list.innerHTML = rooms.map(r => `
+    <div class="card" style="margin-bottom:8px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div><div style="font-family:var(--fh);font-size:15px;color:var(--success);">${r.code}</div>
+        <div style="font-size:11px;color:var(--text2);">Hôte: ${r.hostName} · LOCAL</div></div>
+        <div style="font-size:12px;">${r.count}/${r.maxPlayers}</div>
+      </div>
+      <button class="btn bp bsm" style="width:100%;background:var(--success);" onclick="joinLocalRoomDirect('${r.code}')">Rejoindre</button>
+    </div>`).join('');
+}
+
+function joinLocalRoomDirect(code) {
+  sendLocal({ type: 'join_room', code, pid: PID, name: G.name });
+}
+
+function hostStartLocal() {
+  if(!G.cOK) { toast("❌ Confirme ton pays d'abord !", "e"); return; }
+  sendLocal({ type: 'start_game', pid: PID });
 }
 
 function showLocalRooms(rooms) {
@@ -2476,11 +3058,10 @@ function joinLocalRoom(code) {
 const _origPlayL = playL;
 function playL(l) {
   if(isLocalMode) {
-    // En mode local, envoyer via WebSocket
     if(G.used.has(l)) return;
-    const cur=G.players[G.idx];
-    if(!cur?.isMe||G.elim||G.over) return;
-    sendLocal({ type:'play_letter', letter:l, pid:PID });
+    const cur = G.players[G.idx];
+    if(!cur?.isMe || G.elim || G.over) { toast('⏳ Ce n\'est pas ton tour !', 'e', 1500); return; }
+    sendLocal({ type: 'play_letter', letter: l, pid: PID });
     return;
   }
   _origPlayL(l);
@@ -2489,15 +3070,23 @@ function playL(l) {
 const _origMkG = mkG;
 function mkG() {
   if(isLocalMode) {
-    const gi=document.getElementById('gi'); if(!gi) return;
-    const g=gi.value.trim().toUpperCase(); gi.value='';
+    const gi = document.getElementById('gi'); if(!gi) return;
+    const g = gi.value.trim().toUpperCase(); gi.value = '';
     if(!g) return;
-    const cur=G.players[G.idx];
-    if(!cur?.isMe||G.elim||G.over) return;
-    // Trouver la cible probable
-    const target=G.players.find(p=>!p.isMe&&!p.eliminated);
-    if(target) {
-      sendLocal({ type:'guess_country', guess:g, targetPid:target.id, pid:PID });
+    const cur = G.players[G.idx];
+    if(!cur?.isMe || G.elim || G.over) return;
+    // Demander quelle cible
+    const targets = G.players.filter(p => !p.isMe && !p.eliminated);
+    if(targets.length === 1) {
+      sendLocal({ type: 'guess_country', guess: g, targetPid: targets[0].id, pid: PID });
+    } else if(targets.length > 1) {
+      // Choisir la cible avec le plus de lettres révélées
+      const best = targets.reduce((a, b) => {
+        const scoreA = a.country ? [...G.used].filter(l => a.country.includes(l)).length : 0;
+        const scoreB = b.country ? [...G.used].filter(l => b.country.includes(l)).length : 0;
+        return scoreA >= scoreB ? a : b;
+      });
+      sendLocal({ type: 'guess_country', guess: g, targetPid: best.id, pid: PID });
     }
     return;
   }
@@ -2518,9 +3107,10 @@ function hostStart() {
 /* Override cfC pour envoyer le pays au serveur local */
 const _origCfC = cfC;
 function cfC() {
-  _origCfC(); // appel original
-  if(isLocalMode && G.myCountry) {
-    sendLocal({ type:'set_country', country:G.myCountry, pid:PID });
+  _origCfC();
+  if(isLocalMode && G.country) {
+    sendLocal({ type: 'set_country', country: G.country, pid: PID });
+    toast('✅ Pays envoyé au serveur !', 's', 2000);
   }
 }
 
@@ -2820,6 +3410,56 @@ function toggleQR() {
   const visible = container.style.display !== 'none';
   container.style.display = visible ? 'none' : 'block';
   if(!visible) generateQR();
+}
+
+function extractCodeFromLink(url) {
+  if(!url) return;
+  // Extraire le code depuis un lien type ?salon=XXXX ou #XXXX ou /XXXX
+  const m = url.match(/[?&#/](?:salon|code|room|s)=?([A-Z]{4})/i)
+    || url.match(/([A-Z]{4})$/i);
+  if(m && m[1]) {
+    const code = m[1].toUpperCase();
+    const input = document.getElementById('jo-code');
+    if(input) { input.value = code; input.style.borderColor = 'var(--success)'; }
+    toast('✅ Code extrait : ' + code, 's', 2000);
+  }
+}
+
+let qrStream = null;
+function toggleQRScanner() {
+  const container = document.getElementById('qr-reader-container');
+  const btn = document.getElementById('qr-scan-btn');
+  if(!container) return;
+  const visible = container.style.display !== 'none';
+  if(visible) {
+    // Arrêter
+    container.style.display = 'none';
+    if(qrStream) { qrStream.getTracks().forEach(t=>t.stop()); qrStream=null; }
+    if(btn) btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg> Ouvrir la caméra';
+  } else {
+    // Démarrer
+    container.style.display = 'block';
+    if(btn) btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="3" x2="21" y2="21"/></svg> Arrêter';
+    const video = document.getElementById('qr-video');
+    navigator.mediaDevices?.getUserMedia({ video: { facingMode: 'environment' } })
+      .then(stream => {
+        qrStream = stream;
+        if(video) video.srcObject = stream;
+        toast('📷 Caméra activée — pointe vers un QR Code', '', 3000);
+        // Simulation: dans une vraie app on utiliserait jsQR
+        // Pour l'instant afficher un message
+        setTimeout(()=>{
+          const codeInput = document.getElementById('jo-code');
+          if(codeInput && !codeInput.value) {
+            toast('📷 Scanne le QR Code ou entre le code manuellement', '', 4000);
+          }
+        }, 2000);
+      })
+      .catch(e => {
+        toast('❌ Caméra non disponible: ' + e.message, 'e', 3000);
+        container.style.display = 'none';
+      });
+  }
 }
 
 function generateQR() {
@@ -3921,31 +4561,7 @@ window.addEventListener('load', () => {
     if(musicEnabled && !musicPlaying) startMusic('home');
   }, { once: true });
 });
+
 </script>
-
-<!-- Bouton musique flottant -->
-<div id="music-ctrl" style="position:fixed;bottom:90px;right:16px;z-index:250;display:flex;flex-direction:column;gap:8px;">
-  <button id="music-toggle-btn" onclick="toggleMusic()" title="Musique"
-    style="width:40px;height:40px;border-radius:50%;background:var(--card);border:1px solid var(--border);
-    color:var(--accent);display:flex;align-items:center;justify-content:center;cursor:pointer;
-    box-shadow:0 4px 12px rgba(0,0,0,.3);transition:all .3s;">
-    <div id="music-wave" class="sound-wave">
-      <div class="sound-bar"></div>
-      <div class="sound-bar"></div>
-      <div class="sound-bar"></div>
-      <div class="sound-bar"></div>
-    </div>
-  </button>
-  <button onclick="toggleSound()" title="Sons"
-    style="width:40px;height:40px;border-radius:50%;background:var(--card);border:1px solid var(--border);
-    color:var(--accent);display:flex;align-items:center;justify-content:center;cursor:pointer;
-    box-shadow:0 4px 12px rgba(0,0,0,.3);">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
-      <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
-    </svg>
-  </button>
-</div>
-
 </body>
 </html>
