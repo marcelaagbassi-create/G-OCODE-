@@ -1871,6 +1871,194 @@ function awardCoins() {
   }
 }
 
+/* ============================================================
+   POUVOIRS — Fonctions gameplay
+   ============================================================ */
+
+
+function renderPowersBar() {
+  const bar = document.getElementById('powers-bar');
+  const list = document.getElementById('powers-list');
+  if(!bar || !list) return;
+  const myPowers = Object.entries(G.powers||{}).filter(([,u])=>u>0);
+  if(!myPowers.length) { bar.style.display='none'; return; }
+  bar.style.display='block';
+  const isMyTurn = G.players[G.idx]?.isMe && !G.elim && !G.over;
+  const defs = {
+    pw_hint:{name:'INDICE',icon:'💡'},pw_shield:{name:'BOUCLIER',icon:'🛡️'},
+    pw_double:{name:'×2',icon:'⚡'},pw_bomb:{name:'BOMBE',icon:'💣'},
+    pw_swap:{name:'ÉCHANGE',icon:'🔄'},pw_spy:{name:'ESPION',icon:'🕵️'},
+  };
+  list.innerHTML = myPowers.map(([id,uses])=>{
+    const d=defs[id]||{name:id,icon:'⚡'};
+    return '<div class="power-btn" onclick="'+(isMyTurn?'usePower(\''+id+'\')':'toast(\'Pas ton tour!\',\'e\')')+'" style="opacity:'+(isMyTurn?1:.5)+';">'+
+      '<span style="font-size:20px;">'+d.icon+'</span>'+
+      '<span style="font-size:8px;font-family:var(--fh);color:var(--text2);">'+d.name+'</span>'+
+      '<span style="font-size:9px;color:var(--text3);">'+uses+'x</span></div>';
+  }).join('');
+}
+
+function loadPowers() {
+  G.powers = {};
+  if(!G_shop) return;
+  const powerItems = ['pw_hint','pw_shield','pw_double','pw_bomb','pw_swap','pw_spy'];
+  powerItems.forEach(id => {
+    if(G_shop.owned.has(id)) {
+      const item = SHOP_ITEMS.find(i=>i.id===id);
+      G.powers[id] = (G_shop.powers && G_shop.powers[id] !== undefined) ? G_shop.powers[id] : (item?.uses || 1);
+    }
+  });
+}
+
+function usePower(id) {
+  if(!G.powers[id] || G.powers[id]<=0) { toast('Plus de charges !','e'); return; }
+  const cur = G.players[G.idx];
+  if(!cur?.isMe || G.elim || G.over) { toast('Pas ton tour !','e'); return; }
+  switch(id) {
+    case 'pw_hint':   usePowerHint();   break;
+    case 'pw_shield': usePowerShield(); break;
+    case 'pw_double': usePowerDouble(); break;
+    case 'pw_bomb':   usePowerBomb();   break;
+    case 'pw_swap':   usePowerSwap();   break;
+    case 'pw_spy':    usePowerSpy();    break;
+  }
+}
+
+function consumePower(id) {
+  if(G.powers[id] > 0) {
+    G.powers[id]--;
+    if(!G_shop.powers) G_shop.powers = {};
+    G_shop.powers[id] = G.powers[id];
+    saveShop();
+  }
+  renderPowersBar();
+}
+
+function usePowerHint() {
+  const targets = G.players.filter(p=>!p.isMe&&!p.eliminated&&p.country);
+  if(!targets.length) { toast('Aucun adversaire !','e'); return; }
+  const target = targets.reduce((best,p) => {
+    const r = p.country.split('').filter(c=>G.used.has(c)).length;
+    const rb = best.country.split('').filter(c=>G.used.has(c)).length;
+    return r < rb ? p : best;
+  });
+  const hidden = [...new Set(target.country.replace(/ /g,'').split(''))].filter(c=>!G.used.has(c));
+  if(!hidden.length) { toast('Toutes les lettres sont visibles !','e'); return; }
+  const letter = hidden[Math.floor(Math.random()*hidden.length)];
+  G.used.add(letter);
+  const pos = [];
+  target.country.split('').forEach((ch,i)=>{if(ch===letter)pos.push(i+1);});
+  consumePower('pw_hint');
+  addLog('💡 INDICE: "'+letter+'" chez '+target.name+' — pos: '+pos.join(', '),'s');
+  toast('💡 "'+letter+'" révélé chez '+target.name+' !','s',3000);
+  try{playSound('found');}catch(e){}
+  renderOp(); renderKB();
+}
+
+function usePowerShield() {
+  if(G.activeShield){toast('Bouclier déjà actif !','');return;}
+  G.activeShield = true;
+  G._shieldAfterTurn = G.turn + G.players.filter(p=>!p.eliminated).length;
+  consumePower('pw_shield');
+  toast('🛡️ Bouclier actif ! Protégé ce tour.','s',3000);
+  addLog('🛡️ Tu actives ton bouclier !','s');
+}
+
+function usePowerDouble() {
+  if(G.activeDouble){toast('Double mise déjà active !','');return;}
+  G.activeDouble = true;
+  consumePower('pw_double');
+  toast('⚡ Double mise ! +2x points si tu élimines.','g',3000);
+  addLog('⚡ Tu actives la double mise !','s');
+}
+
+function usePowerBomb() {
+  const targets = G.players.filter(p=>!p.isMe&&!p.eliminated&&p.country);
+  if(!targets.length){toast('Aucun adversaire !','e');return;}
+  if(targets.length===1){doBomb(targets[0].id);return;}
+  let html='<div style="font-size:12px;color:var(--text2);margin-bottom:10px;">Révèle 3 lettres du pays de :</div>';
+  targets.forEach(function(t){ html+='<button class="btn bs" style="width:100%;margin-bottom:8px;" onclick="closeM();doBomb(\''+t.id+'\'">'+t.name+'</button>'; });
+  html+='<button class="btn bs" style="width:100%;" onclick="closeM()">Annuler</button>';
+  showM('💣 Bombe',html);
+}
+
+function doBomb(tid) {
+  const target = G.players.find(p=>p.id===tid);
+  if(!target||!target.country) return;
+  const hidden = [...new Set(target.country.replace(/ /g,'').split('').filter(c=>!G.used.has(c)))];
+  const toReveal = hidden.slice(0,Math.min(3,hidden.length));
+  if(!toReveal.length){toast('Toutes les lettres déjà révélées !','e');return;}
+  toReveal.forEach(l=>{
+    G.used.add(l);
+    const pos=[];
+    target.country.split('').forEach((ch,i)=>{if(ch===l)pos.push(i+1);});
+    addLog('💣 "'+l+'" chez '+target.name+' — pos: '+pos.join(', '),'s');
+  });
+  consumePower('pw_bomb');
+  toast('💣 '+toReveal.join(', ')+' révélées chez '+target.name+' !','g',3000);
+  try{playSound('eliminate');}catch(e){}
+  renderOp(); renderKB();
+}
+
+function usePowerSwap() {
+  showM('🔄 Changer ton pays','<div style="font-size:12px;color:var(--text2);margin-bottom:10px;">Ancien pays: <strong>'+G.country+'</strong></div>'+
+    '<div class="ig"><div class="ilb">Nouveau pays</div><input class="inp" id="swap-inp" placeholder="EX: BRESIL" maxlength="30" style="text-transform:uppercase;font-family:var(--fh);" oninput="this.value=this.value.toUpperCase()"></div>'+
+    '<button class="btn bp" style="width:100%;margin-top:8px;" onclick="doSwap()">Confirmer</button>'+
+    '<button class="btn bs" style="width:100%;margin-top:8px;" onclick="closeM()">Annuler</button>');
+}
+
+function doSwap() {
+  const v = (document.getElementById('swap-inp')?.value||'').trim().toUpperCase();
+  if(!v){toast('Entre un pays !','e');return;}
+  if(!isPaysValide(v)){toast('Pays non reconnu !','e');return;}
+  if(v===G.country){toast('C\'est ton pays actuel !','e');return;}
+  G.country=v; G.myCountry=v;
+  const mycd=document.getElementById('mycd');
+  if(mycd) mycd.textContent=v;
+  renderML(); consumePower('pw_swap'); closeM();
+  addLog('🔄 Nouveau pays: '+v,'w');
+  toast('🔄 Pays changé: '+v,'g',3000);
+}
+
+function usePowerSpy() {
+  const targets = G.players.filter(p=>!p.isMe&&!p.eliminated&&p.country);
+  if(!targets.length){toast('Aucun adversaire !','e');return;}
+  if(targets.length===1){doSpy(targets[0].id);return;}
+  let html='<div style="font-size:12px;color:var(--text2);margin-bottom:10px;">Voir 2 lettres du pays de :</div>';
+  targets.forEach(function(t){ html+='<button class="btn bs" style="width:100%;margin-bottom:8px;" onclick="closeM();doSpy(\''+t.id+'\'">'+t.name+'</button>'; });
+  html+='<button class="btn bs" style="width:100%;" onclick="closeM()">Annuler</button>';
+  showM('🕵️ Espion',html);
+}
+
+function doSpy(tid) {
+  const target = G.players.find(p=>p.id===tid);
+  if(!target||!target.country) return;
+  const hidden = [...new Set(target.country.replace(/ /g,'').split(''))].filter(c=>!G.used.has(c));
+  const revealed = hidden.slice(0,2);
+  if(!revealed.length){toast('Toutes les lettres déjà visibles !','e');return;}
+  consumePower('pw_spy');
+  showM('🕵️ Rapport espion','<div style="text-align:center;padding:10px;">'+
+    '<div style="font-size:12px;color:var(--text2);margin-bottom:12px;">Pays de <strong>'+target.name+'</strong> ('+target.country.replace(/ /g,'').length+' lettres) :</div>'+
+    '<div style="display:flex;gap:10px;justify-content:center;margin-bottom:14px;">'+
+    revealed.map(l=>'<div style="width:44px;height:44px;border-radius:8px;background:linear-gradient(135deg,var(--accent3),var(--accent));display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:20px;font-weight:900;color:white;">'+l+'</div>').join('')+
+    '</div><div style="font-size:10px;color:var(--text2);">Visible seulement par toi !</div></div>'+
+    '<button class="btn bp" style="width:100%;" onclick="closeM()">Compris !</button>');
+  addLog('🕵️ Tu vois "'+revealed.join(', ')+'" chez '+target.name,'s');
+  try{playSound('reveal');}catch(e){}
+}
+
+function checkShieldExpiry() {
+  if(G.activeShield && G._shieldAfterTurn && G.turn >= G._shieldAfterTurn) {
+    G.activeShield=false; G._shieldAfterTurn=null;
+    toast('🛡️ Bouclier expiré !','',2000);
+    renderPowersBar();
+  }
+  if(G.activeDouble && G._doubleUsed) {
+    G.activeDouble=false; G._doubleUsed=false;
+    renderPowersBar();
+  }
+}
+
 function updFB() {
   const d=document.getElementById('fbd'), t=document.getElementById('fbt');
   if(d) d.className='fbd'+(fbOK?' ok':'');
@@ -3341,7 +3529,8 @@ function syncFB(gs) {
       addN("⚡ C'est ton tour de jouer !");
     }
     // En solo seulement, faire jouer les bots
-    if(G.isSolo) chkT();
+    try { checkShieldExpiry(); } catch(e) {}
+  if(G.isSolo) chkT();
   }
 }
 
@@ -3555,10 +3744,13 @@ function hostStart() {
 function launch() {
   G.started=true;
   G.elim=false;
+  G.activeShield=false; G.activeDouble=false;
   document.getElementById('ebanner')?.classList.remove('on');
   document.getElementById('mta').style.display='none';
   const d=document.getElementById('mycd'); if(d) d.textContent=G.country;
   renderGame(); showSc('game');
+  // Charger et afficher les pouvoirs
+  try { loadPowers(); renderPowersBar(); } catch(e) {}
   toast('🎮 La partie commence !','g',3000);
   addNWithSystem('🎮 Partie lancée !', 'GÉOCODE', 'La partie commence !', 'start');
   try { playSound('start'); } catch(e) {}
@@ -3715,6 +3907,7 @@ function advT() {
     const cur=G.players[G.idx];
     if(cur?.isMe&&!G.elim) try{playSound('myturn');}catch(e){}
   },100);
+  try { checkShieldExpiry(); } catch(e) {}
   if(G.isSolo) chkT();
 }
 
@@ -3755,10 +3948,20 @@ function botT(bot) {
         toast(`😱 ${bot.name} connaît ton pays !`,'e',3000);
         setTimeout(()=>{
           if(G.over||G.elim) return;
+          // Vérifier le bouclier
+          if(G.activeShield) {
+            G.activeShield = false;
+            addLog(`🛡️ Bouclier ! ${bot.name} n'a pas pu t'éliminer ce tour !`, 'w');
+            toast(`🛡️ Ton bouclier t'a protégé contre ${bot.name} !`, 's', 3000);
+            renderPowersBar();
+            renderOp(); updT();
+            setTimeout(advT, 1500);
+            return;
+          }
           G.elim=true;
           document.getElementById('ebanner')?.classList.add('on');
           document.getElementById('mta').style.display='none';
-          bot.score+=500; // Bonus pour avoir deviné avec toutes lettres
+          bot.score+=500;
           addLog(`💀 ${bot.name} a deviné "${G.country}" — toutes les lettres étaient révélées !`,'e');
           toast(`💀 ${bot.name} t'a éliminé ! Ton pays ${G.country} était découvert.`,'e',5000);
           addN(`💀 ${bot.name} a deviné ton pays "${G.country}" !`);
