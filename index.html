@@ -343,9 +343,10 @@ body{font-family:var(--fb);background:var(--bg);color:var(--text);min-height:100
 
 
 <!-- HEAVENLY JUMPSTYLE — TWXNY (intégré directement) -->
-<audio id="heavenly-audio" loop preload="auto">
+<audio id="heavenly-audio" loop preload="auto" style="display:none;">
+  <source src="./heavenly.mp3" type="audio/webm">
   <source src="./heavenly.mp3" type="audio/mpeg">
-  <source src="./heavenly.webm" type="audio/webm">
+  <source src="./heavenly.mp3" type="video/webm">
 </audio>
 
 <div class="app">
@@ -1526,41 +1527,86 @@ let heavenlyAudio = null;
 let heavenlyPlaying = false;
 
 function initHeavenlyAudio() {
+  if(heavenlyAudio) return; // déjà initialisé
   heavenlyAudio = document.getElementById('heavenly-audio');
-  if(!heavenlyAudio) return;
-  heavenlyAudio.volume = 0.75;
-
-  heavenlyAudio.addEventListener('ended', () => {
-    heavenlyAudio.currentTime = 0;
-    heavenlyAudio.play().catch(()=>{});
-  });
+  if(!heavenlyAudio) {
+    console.warn('[GÉOCODE] Element heavenly-audio introuvable');
+    return;
+  }
+  heavenlyAudio.volume = 0.8;
+  heavenlyAudio.loop = true;
 
   heavenlyAudio.addEventListener('play', () => {
     heavenlyPlaying = true;
     updateHeavenlyUI(true);
+    console.log('[GÉOCODE] Heavenly Jumpstyle en cours ▶');
   });
-
   heavenlyAudio.addEventListener('pause', () => {
     heavenlyPlaying = false;
     updateHeavenlyUI(false);
   });
+  heavenlyAudio.addEventListener('error', (e) => {
+    console.error('[GÉOCODE] Erreur audio:', e.target.error);
+    // Essayer avec fetch + blob URL comme fallback
+    loadAudioWithFetch();
+  });
+  heavenlyAudio.addEventListener('canplaythrough', () => {
+    console.log('[GÉOCODE] Audio prêt à jouer ✅');
+  });
+  console.log('[GÉOCODE] Audio initialisé, src:', heavenlyAudio.currentSrc || 'en cours...');
+}
+
+function loadAudioWithFetch() {
+  // Fallback: charger via fetch et créer un Blob URL
+  const url = './heavenly.mp3';
+  fetch(url)
+    .then(r => {
+      if(!r.ok) throw new Error('HTTP ' + r.status);
+      return r.blob();
+    })
+    .then(blob => {
+      const blobUrl = URL.createObjectURL(blob);
+      if(heavenlyAudio) {
+        heavenlyAudio.src = blobUrl;
+        heavenlyAudio.load();
+        heavenlyAudio.play().then(()=>{
+          heavenlyPlaying = true;
+          updateHeavenlyUI(true);
+          toast('🎵 HEAVENLY JUMPSTYLE', 's', 2000);
+        }).catch(e => console.warn('[Audio Blob]', e));
+      }
+    })
+    .catch(e => {
+      console.error('[GÉOCODE] Fetch audio échoué:', e);
+      toast('❌ Fichier audio introuvable sur le serveur', 'e', 3000);
+    });
 }
 
 function playHeavenly() {
+  // Initialiser si pas encore fait
   if(!heavenlyAudio) initHeavenlyAudio();
-  if(!heavenlyAudio) return;
-  // Pause la musique synthétisée
+  if(!heavenlyAudio) {
+    toast('❌ Audio non disponible', 'e', 2000);
+    return;
+  }
+  // Arrêter musique synthétisée
   try { if(musicPlaying) stopMusic(); } catch(e) {}
-  heavenlyAudio.play()
-    .then(() => {
+  // Charger et jouer
+  if(heavenlyAudio.readyState < 2) {
+    heavenlyAudio.load();
+  }
+  const playPromise = heavenlyAudio.play();
+  if(playPromise) {
+    playPromise.then(() => {
       heavenlyPlaying = true;
       updateHeavenlyUI(true);
-      toast('🎵 HEAVENLY JUMPSTYLE — TWXNY', 's', 2000);
-    })
-    .catch(e => {
-      console.warn('[Audio] Autoplay bloqué:', e);
-      toast('Appuie sur Play pour lancer la musique', '', 3000);
+      toast('🎵 HEAVENLY JUMPSTYLE — TWXNY', 's', 2500);
+    }).catch(e => {
+      console.warn('[Audio] Play échoué:', e.message);
+      // Essayer le fallback fetch
+      loadAudioWithFetch();
     });
+  }
 }
 
 function pauseHeavenly() {
@@ -4966,11 +5012,21 @@ function showScAudio(id) {
 window.addEventListener('load', () => {
   initAudioSettings();
   // Démarrer la musique au premier clic (politique navigateur)
-  document.addEventListener('click', () => {
-    if(musicEnabled && !musicPlaying) startMusic('home');
-    // Initialiser l'audio Heavenly (nécessite interaction utilisateur)
-    try { initHeavenlyAudio(); } catch(e) {}
-  }, { once: true });
+  // Initialiser Heavenly au premier clic (politique autoplay navigateur)
+  document.addEventListener('click', function heavenlyInit() {
+    try { 
+      initHeavenlyAudio();
+      // Lancer automatiquement après le premier clic
+      if(heavenlyAudio && !heavenlyPlaying) {
+        heavenlyAudio.play().then(()=>{
+          heavenlyPlaying = true;
+          updateHeavenlyUI(true);
+        }).catch(()=>{});
+      }
+    } catch(e) {}
+    if(musicEnabled && !musicPlaying) try { startMusic('home'); } catch(e) {}
+    document.removeEventListener('click', heavenlyInit);
+  });
 });
 
 </script>
