@@ -1058,24 +1058,7 @@ body{font-family:var(--fb);background:var(--bg);color:var(--text);min-height:100
     </div>
   </div>
 
-  <!-- Mini barre Heavenly (visible quand music joue) -->
-  <div id="heavenly-bar" style="display:none;position:fixed;bottom:80px;left:50%;
-    transform:translateX(-50%);z-index:400;background:var(--bg2);border:1px solid var(--border);
-    border-radius:24px;padding:6px 14px;align-items:center;gap:10px;
-    box-shadow:0 4px 16px rgba(0,0,0,.4);min-width:220px;">
-    <div style="display:flex;align-items:center;gap:3px;">
-      <div class="heavenly-vbar" style="width:3px;height:12px;border-radius:2px;background:var(--accent);animation:soundAnim .8s ease infinite;"></div>
-      <div class="heavenly-vbar" style="width:3px;height:16px;border-radius:2px;background:var(--accent2);animation:soundAnim .6s ease infinite .1s;"></div>
-      <div class="heavenly-vbar" style="width:3px;height:10px;border-radius:2px;background:var(--accent3);animation:soundAnim .9s ease infinite .2s;"></div>
-      <div class="heavenly-vbar" style="width:3px;height:14px;border-radius:2px;background:var(--accent);animation:soundAnim .7s ease infinite .05s;"></div>
-    </div>
-    <div style="flex:1;min-width:0;">
-      <div style="font-family:var(--fh);font-size:9px;color:var(--accent);letter-spacing:1px;white-space:nowrap;">HEAVENLY JUMPSTYLE</div>
-      <div style="font-size:8px;color:var(--text2);">TWXNY · En cours...</div>
-    </div>
-    <button onclick="pauseHeavenly()" style="background:none;border:none;color:var(--text2);cursor:pointer;padding:2px;font-size:14px;">⏸</button>
-  </div>
-
+  
   <!-- BOTTOM NAV PILL (4 items) -->
   <div class="bnav" id="bnav">
     <div class="ni on" id="ni-home" onclick="navTo('home')">
@@ -1623,21 +1606,26 @@ function toggleHeavenly() {
   else playHeavenly();
 }
 
+function toggleHeavenlyFromSettings(el) {
+  el.classList.toggle('on');
+  const isOn = el.classList.contains('on');
+  if(isOn) playHeavenly();
+  else pauseHeavenly();
+  updateHeavenlySettingsUI();
+}
+
+function updateHeavenlySettingsUI() {
+  const tog = document.getElementById('heavenly-tog');
+  const wave = document.getElementById('heavenly-wave');
+  const status = document.getElementById('heavenly-status');
+  if(tog) tog.className = 'tog' + (heavenlyPlaying ? ' on' : '');
+  if(wave) wave.className = 'sound-wave' + (heavenlyPlaying ? '' : ' off');
+  if(status) status.textContent = heavenlyPlaying ? '▶ En cours...' : '⏸ Arrêtée';
+}
+
 function updateHeavenlyUI(playing) {
-  // Mettre à jour le bouton dans le header
-  const btn = document.getElementById('heavenly-btn');
-  if(btn) {
-    btn.style.color = playing ? 'var(--accent)' : '';
-    btn.title = playing ? 'HEAVENLY JUMPSTYLE — En cours ▶' : 'HEAVENLY JUMPSTYLE — Cliquer pour jouer';
-  }
-  // Mettre à jour la mini-barre en bas
-  const bar = document.getElementById('heavenly-bar');
-  if(bar) bar.style.display = playing ? 'flex' : 'none';
-  // Animer les barres visualiseur
-  const vbars = document.querySelectorAll('.heavenly-vbar');
-  vbars.forEach(b => {
-    b.style.animationPlayState = playing ? 'running' : 'paused';
-  });
+  // Mettre à jour uniquement les contrôles dans Paramètres
+  updateHeavenlySettingsUI();
 }
 
 function setHeavenlyVolume(v) {
@@ -1645,23 +1633,8 @@ function setHeavenlyVolume(v) {
 }
 
 function initAudiomackPlayer() {
-  // Proposer d'activer la musique au premier lancement
-  const shown = localStorage.getItem('gc-music-shown');
-  if(!shown) {
-    setTimeout(() => {
-      showM('🎵 Musique officielle GÉOCODE',
-        '<div style="text-align:center;padding:8px 0 16px;">' +
-        '<div style="font-size:40px;margin-bottom:10px;">🎵</div>' +
-        '<div style="font-family:var(--fh);font-size:15px;color:var(--accent);letter-spacing:1px;">HEAVENLY JUMPSTYLE</div>' +
-        '<div style="font-size:11px;color:var(--text2);margin-top:3px;">TWXNY · Sxilwix · Innxcence</div>' +
-        '<div style="font-size:10px;color:var(--text3);margin-top:10px;line-height:1.8;">La bande-son officielle de GÉOCODE<br>intégrée directement dans l\'app !</div></div>' +
-        '<button class="btn bp" style="width:100%;margin-bottom:8px;" onclick="closeM();playHeavenly();">' +
-        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>' +
-        ' Lancer la musique</button>' +
-        '<button class="btn bs" style="width:100%;" onclick="closeM();">Peut-être plus tard</button>');
-      localStorage.setItem('gc-music-shown', '1');
-    }, 5000);
-  }
+  // Plus de modal — la musique joue silencieusement au premier clic
+  // Contrôle disponible dans Paramètres > Sons
 }
 
 function loadStatsFromFirebase(uid) {
@@ -5012,16 +4985,21 @@ function showScAudio(id) {
 window.addEventListener('load', () => {
   initAudioSettings();
   // Démarrer la musique au premier clic (politique navigateur)
-  // Initialiser Heavenly au premier clic (politique autoplay navigateur)
+  // Démarrer HEAVENLY JUMPSTYLE au premier clic (exigence navigateur)
   document.addEventListener('click', function heavenlyInit() {
-    try { 
+    try {
       initHeavenlyAudio();
-      // Lancer automatiquement après le premier clic
       if(heavenlyAudio && !heavenlyPlaying) {
-        heavenlyAudio.play().then(()=>{
-          heavenlyPlaying = true;
-          updateHeavenlyUI(true);
-        }).catch(()=>{});
+        heavenlyAudio.play()
+          .then(() => {
+            heavenlyPlaying = true;
+            updateHeavenlyUI(true);
+            // Activer le toggle dans paramètres
+            const tog = document.getElementById('heavenly-tog');
+            if(tog) tog.classList.add('on');
+            updateHeavenlySettingsUI();
+          })
+          .catch(() => {});
       }
     } catch(e) {}
     if(musicEnabled && !musicPlaying) try { startMusic('home'); } catch(e) {}
