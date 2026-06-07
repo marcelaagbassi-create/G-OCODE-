@@ -292,6 +292,73 @@ body{font-family:var(--fb);background:var(--bg);color:var(--text);min-height:100
 .sa::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 .pc{padding:0 18px;}
 .dv{height:1px;background:var(--border);margin:12px 0;}
+
+/* ============ RESPONSIVE — ADAPTATIF ============ */
+/* Tablette (600px - 1024px) */
+@media (min-width:600px) {
+  .app{max-width:640px;margin:0 auto;box-shadow:0 0 40px rgba(0,0,0,.5);}
+  .pgrid{grid-template-columns:repeat(3,1fr);}
+  .lbox{width:44px;height:44px;font-size:18px;}
+  .bnav{width:420px;left:50%;transform:translateX(-50%);}
+  .hdr{padding:16px 24px 12px;}
+  .card{padding:16px;}
+  .kb-grid{gap:7px;padding:14px;}
+  .kb-key{height:46px;font-size:15px;}
+}
+
+/* Desktop (> 1024px) */
+@media (min-width:1024px) {
+  body{overflow:hidden;height:100vh;}
+  .app{max-width:100vw;box-shadow:none;}
+  .bnav{
+    position:fixed !important;left:0 !important;top:60px !important;
+    bottom:0 !important;width:220px !important;
+    border-radius:0 !important;transform:none !important;
+    flex-direction:column !important;justify-content:flex-start !important;
+    padding:20px 14px !important;gap:6px !important;
+    background:var(--bg2) !important;
+    border-right:1px solid var(--border) !important;
+    border-top:none !important;box-shadow:none !important;
+  }
+  .ni{
+    width:100% !important;justify-content:flex-start !important;
+    padding:10px 14px !important;border-radius:10px !important;gap:10px !important;
+  }
+  .ni span{display:block !important;font-size:11px !important;}
+  .sc{margin-left:220px !important;padding-bottom:0 !important;
+    height:calc(100vh - 60px);overflow-y:auto;}
+  .lbox{width:50px;height:50px;font-size:20px;}
+  .pgrid{grid-template-columns:repeat(4,1fr);}
+  .kb-grid{max-width:680px;margin:0 auto;}
+  #chat-panel-desktop{display:flex !important;}
+}
+
+/* TV (> 1920px) */
+@media (min-width:1920px) {
+  html{font-size:20px;}
+  .bnav{width:280px !important;}
+  .sc{margin-left:280px !important;}
+  .lbox{width:64px;height:64px;font-size:24px;}
+  .kb-key{height:60px;font-size:18px;}
+  .hdr{height:72px;padding:0 48px;}
+  .logo-t{font-size:28px !important;}
+  .card{padding:24px;}
+  .btn{padding:14px 24px;font-size:14px;}
+}
+
+/* Mode paysage mobile */
+@media (max-width:900px) and (orientation:landscape) {
+  .sc{padding-bottom:70px;}
+  .bnav{padding:6px 20px;}
+  .ni span{font-size:9px;}
+  .globe-c{display:none;}
+}
+
+/* Tablette portrait spécifique */
+@media (min-width:600px) and (max-width:1023px) {
+  .shop-grid{grid-template-columns:repeat(3,1fr) !important;}
+  .mc-grid{grid-template-columns:repeat(2,1fr);}
+}
 </style>
 </head>
 <body data-theme="dark">
@@ -2284,6 +2351,415 @@ function checkShieldExpiry() {
   }
 }
 
+/* ============================================================
+   DÉTECTION APPAREIL & MODE ADAPTATIF
+   ============================================================ */
+
+function detectDevice() {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const ua = navigator.userAgent.toLowerCase();
+  const isTV = ua.includes('smart-tv') || ua.includes('smarttv') ||
+               ua.includes('hbbtv') || ua.includes('netcast') ||
+               ua.includes('viera') || w >= 1920;
+  const isTablet = (w >= 600 && w < 1024) ||
+                   (ua.includes('ipad')) ||
+                   (ua.includes('tablet'));
+  const isDesktop = w >= 1024 && !isTV;
+  const isMobile = w < 600 && !isTablet;
+
+  let mode = 'mobile';
+  if(isTV) mode = 'tv';
+  else if(isDesktop) mode = 'desktop';
+  else if(isTablet) mode = 'tablet';
+
+  document.body.setAttribute('data-device', mode);
+  document.documentElement.setAttribute('data-device', mode);
+
+  // Appliquer les ajustements spécifiques
+  applyDeviceMode(mode, w, h);
+
+  console.log('[GÉOCODE] Mode appareil:', mode, w+'x'+h);
+  return mode;
+}
+
+function applyDeviceMode(mode, w, h) {
+  const app = document.querySelector('.app');
+  const bnav = document.querySelector('.bnav');
+  const chatDesktop = document.getElementById('chat-panel-desktop');
+
+  if(mode === 'desktop' || mode === 'tv') {
+    // Desktop/TV: sidebar nav + chat panel
+    if(chatDesktop) chatDesktop.style.display = 'flex';
+    // Ajuster la zone principale pour laisser place aux sidebars
+    document.querySelectorAll('.sc').forEach(sc => {
+      sc.style.marginLeft = '240px';
+      sc.style.marginRight = '300px';
+      sc.style.paddingBottom = '0';
+    });
+    // Ajuster le header
+    const hdr = document.querySelector('.hdr');
+    if(hdr) { hdr.style.marginLeft = '240px'; hdr.style.marginRight = '300px'; }
+
+  } else if(mode === 'tablet') {
+    // Tablette: layout compact, chat en modal
+    if(chatDesktop) chatDesktop.style.display = 'none';
+    // Ajouter bouton chat dans le header
+    addChatButtonHeader();
+
+  } else if(mode === 'mobile') {
+    // Mobile: tout en modal
+    if(chatDesktop) chatDesktop.style.display = 'none';
+  } else if(mode === 'tv') {
+    // TV: grande police, éléments plus grands
+    document.documentElement.style.fontSize = '20px';
+  }
+}
+
+function addChatButtonHeader() {
+  if(document.getElementById('chat-header-btn')) return;
+  const headerBtns = document.querySelector('.hdr > div:last-child');
+  if(!headerBtns) return;
+  const btn = document.createElement('div');
+  btn.className = 'ibtn';
+  btn.id = 'chat-header-btn';
+  btn.onclick = openChatModal;
+  btn.title = 'Chat';
+  btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
+  headerBtns.insertBefore(btn, headerBtns.firstChild);
+}
+
+// Réécouter le resize
+window.addEventListener('resize', () => {
+  clearTimeout(window._resizeTimer);
+  window._resizeTimer = setTimeout(detectDevice, 300);
+});
+
+/* ============================================================
+   CHAT FIREBASE — Texte + Messages vocaux en temps réel
+   ============================================================ */
+
+let chatRef = null;
+let chatRoomId = null;
+let mediaRecorder = null;
+let audioChunks = [];
+let isRecording = false;
+
+function initChat(roomCode) {
+  if(!fbOK || !db) return;
+  chatRoomId = roomCode;
+  chatRef = db.ref('chats/' + roomCode);
+
+  // Écouter les nouveaux messages en temps réel
+  chatRef.limitToLast(50).on('child_added', (snap) => {
+    const msg = snap.val();
+    if(msg) displayChatMessage(msg);
+  });
+
+  // Compter les participants
+  db.ref('presence').on('value', snap => {
+    const count = Object.keys(snap.val() || {}).length;
+    const el1 = document.getElementById('chat-online-count');
+    const el2 = document.getElementById('chat-online-count-m');
+    if(el1) el1.textContent = '● ' + count + ' en ligne';
+    if(el2) el2.textContent = '● ' + count + ' en ligne';
+  });
+}
+
+function sendChatMsg() {
+  const inputD = document.getElementById('chat-input-desktop');
+  const inputM = document.getElementById('chat-input-mobile');
+  const text = (inputD?.value || inputM?.value || '').trim();
+  if(!text) return;
+  if(!chatRef) {
+    // Pas en partie — utiliser un chat global
+    if(!fbOK || !db) { toast('Connecte-toi pour chatter', 'e'); return; }
+    chatRef = db.ref('chats/global');
+    chatRoomId = 'global';
+  }
+
+  const msg = {
+    type: 'text',
+    text: text,
+    from: G.name || 'Joueur',
+    uid: G.uid || PID,
+    ts: Date.now(),
+    avatar: (G.name || 'J')[0].toUpperCase(),
+  };
+
+  chatRef.push(msg).catch(e => toast('❌ Erreur envoi: ' + e.message, 'e'));
+
+  // Vider les inputs
+  if(inputD) inputD.value = '';
+  if(inputM) inputM.value = '';
+}
+
+function displayChatMessage(msg) {
+  const isMe = msg.uid === (G.uid || PID);
+  const time = new Date(msg.ts).toLocaleTimeString('fr', {hour:'2-digit', minute:'2-digit'});
+
+  let content = '';
+  if(msg.type === 'text') {
+    content = '<div style="word-break:break-word;">' + escapeHtml(msg.text) + '</div>';
+  } else if(msg.type === 'voice') {
+    content = '<audio controls src="' + msg.url + '" style="max-width:180px;height:32px;"></audio>';
+  } else if(msg.type === 'system') {
+    // Message système (rejoint, quitté...)
+    const sysEl = document.createElement('div');
+    sysEl.style.cssText = 'text-align:center;font-size:10px;color:var(--text3);padding:4px 0;';
+    sysEl.textContent = msg.text;
+    appendToChats(sysEl);
+    return;
+  }
+
+  const msgHTML = '<div style="display:flex;flex-direction:column;align-items:' +
+    (isMe ? 'flex-end' : 'flex-start') + ';gap:2px;">' +
+    (!isMe ? '<span style="font-size:9px;color:var(--text2);font-weight:700;padding:0 6px;">' + escapeHtml(msg.from) + '</span>' : '') +
+    '<div style="max-width:80%;padding:8px 11px;border-radius:' +
+    (isMe ? '14px 14px 4px 14px' : '14px 14px 14px 4px') +
+    ';background:' + (isMe ? 'var(--accent)' : 'var(--bg3)') +
+    ';color:' + (isMe ? 'var(--bg)' : 'var(--text)') + ';font-size:12px;line-height:1.4;">' +
+    content + '</div>' +
+    '<span style="font-size:8px;color:var(--text3);padding:0 6px;">' + time + '</span>' +
+    '</div>';
+
+  const el = document.createElement('div');
+  el.innerHTML = msgHTML;
+  appendToChats(el);
+}
+
+function appendToChats(el) {
+  const d = document.getElementById('chat-messages-desktop');
+  const m = document.getElementById('chat-messages-mobile');
+  if(d) { d.appendChild(el.cloneNode(true)); d.scrollTop = d.scrollHeight; }
+  if(m) { m.appendChild(el.cloneNode(true)); m.scrollTop = m.scrollHeight; }
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ============================================================
+   MESSAGES VOCAUX — Enregistrement micro
+   ============================================================ */
+
+function startVoiceMsg() {
+  if(isRecording) {
+    stopVoiceMsg();
+    return;
+  }
+  navigator.mediaDevices.getUserMedia({ audio: true })
+    .then(stream => {
+      mediaRecorder = new MediaRecorder(stream);
+      audioChunks = [];
+      isRecording = true;
+
+      // UI enregistrement
+      const btns = document.querySelectorAll('#voice-rec-btn, #voice-rec-btn-m');
+      btns.forEach(b => {
+        b.style.background = 'var(--danger)';
+        b.style.color = 'white';
+        b.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="red" stroke="white" stroke-width="2"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
+      });
+      toast('🔴 Enregistrement... Appuie pour arrêter', 'e', 30000);
+
+      mediaRecorder.ondataavailable = e => { if(e.data.size > 0) audioChunks.push(e.data); };
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(audioChunks, { type: 'audio/webm' });
+        sendVoiceMessage(blob);
+        stream.getTracks().forEach(t => t.stop());
+        isRecording = false;
+        btns.forEach(b => {
+          b.style.background = 'var(--bg3)';
+          b.style.color = 'var(--text2)';
+          b.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>';
+        });
+      };
+      mediaRecorder.start();
+    })
+    .catch(e => toast('❌ Micro non disponible: ' + e.message, 'e', 3000));
+}
+
+function stopVoiceMsg() {
+  if(mediaRecorder && isRecording) {
+    mediaRecorder.stop();
+    toast('✅ Message vocal envoyé !', 's', 2000);
+  }
+}
+
+function sendVoiceMessage(blob) {
+  if(!chatRef) return;
+  // Encoder en base64 pour Firebase (Storage non requis)
+  const reader = new FileReader();
+  reader.onload = () => {
+    const base64 = reader.result;
+    chatRef.push({
+      type: 'voice',
+      url: base64,
+      from: G.name || 'Joueur',
+      uid: G.uid || PID,
+      ts: Date.now(),
+    }).catch(e => console.warn('[Chat Voice]', e));
+  };
+  reader.readAsDataURL(blob);
+}
+
+/* ============================================================
+   APPELS VOCAUX & VIDÉO — WebRTC P2P
+   ============================================================ */
+
+let localStream = null;
+let peerConnection = null;
+let callRef = null;
+let isMuted = false;
+let isCamOff = false;
+
+const RTC_CONFIG = {
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' },
+  ]
+};
+
+async function startVideoCall() {
+  if(!fbOK || !db) { toast('❌ Firebase requis pour les appels', 'e', 3000); return; }
+  if(!chatRoomId) { toast('❌ Rejoins une partie pour appeler', 'e', 3000); return; }
+
+  try {
+    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+  } catch(e) {
+    // Essayer audio seulement
+    try {
+      localStream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+      toast('📷 Caméra non disponible — appel audio seulement', '', 3000);
+    } catch(e2) {
+      toast('❌ Micro/Caméra non disponibles', 'e', 3000);
+      return;
+    }
+  }
+
+  const localVideo = document.getElementById('local-video');
+  if(localVideo) localVideo.srcObject = localStream;
+
+  // Afficher l'overlay appel
+  const overlay = document.getElementById('video-call-overlay');
+  if(overlay) overlay.style.display = 'flex';
+
+  // Créer la connexion WebRTC
+  peerConnection = new RTCPeerConnection(RTC_CONFIG);
+  localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+  // Recevoir le flux distant
+  peerConnection.ontrack = event => {
+    const remoteVideo = document.getElementById('remote-video');
+    if(remoteVideo) remoteVideo.srcObject = event.streams[0];
+  };
+
+  // Signalisation via Firebase
+  callRef = db.ref('calls/' + chatRoomId + '/' + PID);
+
+  peerConnection.onicecandidate = event => {
+    if(event.candidate) {
+      callRef.child('candidates').push(event.candidate.toJSON());
+    }
+  };
+
+  // Créer l'offre
+  const offer = await peerConnection.createOffer();
+  await peerConnection.setLocalDescription(offer);
+  callRef.child('offer').set({ sdp: offer.sdp, type: offer.type, from: PID, name: G.name });
+
+  // Écouter la réponse
+  callRef.child('answer').on('value', async snap => {
+    const answer = snap.val();
+    if(answer && !peerConnection.currentRemoteDescription) {
+      await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
+      document.getElementById('call-status').textContent = 'Connecté avec ' + (answer.name || 'joueur');
+    }
+  });
+
+  // Écouter les candidats ICE distants
+  db.ref('calls/' + chatRoomId).on('child_added', async snap => {
+    const data = snap.val();
+    if(data?.offer && snap.key !== PID) {
+      // Quelqu'un appelle → répondre automatiquement
+      await answerCall(data.offer, snap.key);
+    }
+  });
+
+  toast('📞 Appel lancé — en attente...', 's', 3000);
+  // Notifier dans le chat
+  if(chatRef) chatRef.push({ type:'system', text: G.name + ' a lancé un appel vidéo 📞', ts: Date.now() });
+}
+
+async function answerCall(offer, callerId) {
+  if(!localStream) return;
+  if(!peerConnection) {
+    peerConnection = new RTCPeerConnection(RTC_CONFIG);
+    localStream.getTracks().forEach(t => peerConnection.addTrack(t, localStream));
+    peerConnection.ontrack = e => {
+      const rv = document.getElementById('remote-video');
+      if(rv) rv.srcObject = e.streams[0];
+    };
+  }
+
+  await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+  const answer = await peerConnection.createAnswer();
+  await peerConnection.setLocalDescription(answer);
+  db.ref('calls/' + chatRoomId + '/' + callerId + '/answer').set({
+    sdp: answer.sdp, type: answer.type, name: G.name
+  });
+  document.getElementById('call-status').textContent = 'Connecté !';
+}
+
+function toggleMuteCall() {
+  if(!localStream) return;
+  isMuted = !isMuted;
+  localStream.getAudioTracks().forEach(t => t.enabled = !isMuted);
+  const btn = document.getElementById('mute-btn');
+  if(btn) btn.textContent = isMuted ? '🔇' : '🎤';
+  toast(isMuted ? '🔇 Micro coupé' : '🎤 Micro activé', '', 1500);
+}
+
+function toggleCameraCall() {
+  if(!localStream) return;
+  isCamOff = !isCamOff;
+  localStream.getVideoTracks().forEach(t => t.enabled = !isCamOff);
+  const btn = document.getElementById('cam-btn');
+  if(btn) btn.textContent = isCamOff ? '📵' : '📷';
+}
+
+function endCall() {
+  if(localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+  if(peerConnection) { peerConnection.close(); peerConnection = null; }
+  if(callRef) { callRef.remove().catch(()=>{}); callRef = null; }
+  const overlay = document.getElementById('video-call-overlay');
+  if(overlay) overlay.style.display = 'none';
+  toast('📵 Appel terminé', '', 2000);
+  if(chatRef) chatRef.push({ type:'system', text: G.name + ' a raccroché', ts: Date.now() });
+}
+
+function openChatModal() {
+  const modal = document.getElementById('chat-modal');
+  if(modal) modal.style.display = 'flex';
+  if(!chatRoomId && fbOK && db) {
+    chatRef = db.ref('chats/global');
+    chatRoomId = 'global';
+    initChat('global');
+  }
+}
+
+function closeChatModal() {
+  const modal = document.getElementById('chat-modal');
+  if(modal) modal.style.display = 'none';
+}
+
+/* Initialiser le chat quand on rejoint un salon */
+function initChatForRoom(code) {
+  chatRoomId = code;
+  if(fbOK && db) initChat(code);
+}
+
 function updFB() {
   const d=document.getElementById('fbd'), t=document.getElementById('fbt');
   if(d) d.className='fbd'+(fbOK?' ok':'');
@@ -3217,6 +3693,7 @@ function handleLocalMessage(msg) {
       if(rcEl2) rcEl2.textContent = msg.code;
       showSc('lobby');
       toast('✅ Rejoint le salon ' + msg.code, 's', 2500);
+      try { initChatForRoom(msg.code); } catch(e) {}
       break;
 
     case 'room_state': {
@@ -5008,5 +5485,95 @@ window.addEventListener('load', () => {
 });
 
 </script>
+<!-- CHAT SIDEBAR — Desktop uniquement -->
+<div id="chat-panel-desktop" style="display:none;position:fixed;right:0;top:60px;bottom:0;
+  width:300px;background:var(--bg2);border-left:1px solid var(--border);
+  flex-direction:column;z-index:150;">
+  <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <span style="font-family:var(--fh);font-size:11px;letter-spacing:1px;color:var(--text);">CHAT EN DIRECT</span>
+    <span id="chat-online-count" style="margin-left:auto;font-size:10px;color:var(--success);">● 0 en ligne</span>
+  </div>
+  <div id="chat-messages-desktop" style="flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;">
+    <div style="text-align:center;color:var(--text3);font-size:11px;padding:20px 0;">
+      Rejoins une partie pour chatter !
+    </div>
+  </div>
+  <div style="padding:10px 12px;border-top:1px solid var(--border);">
+    <div style="display:flex;gap:6px;align-items:center;">
+      <input id="chat-input-desktop" class="inp" placeholder="Message..." style="flex:1;font-size:12px;padding:8px 10px;"
+        onkeydown="if(event.key==='Enter')sendChatMsg()">
+      <button onclick="startVoiceMsg()" title="Message vocal"
+        style="width:36px;height:36px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);
+        color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;" id="voice-rec-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+      </button>
+      <button onclick="startVideoCall()" title="Appel vidéo"
+        style="width:36px;height:36px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);
+        color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      </button>
+      <button onclick="sendChatMsg()"
+        style="width:36px;height:36px;border-radius:8px;background:var(--accent);border:none;
+        color:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- CHAT MODAL — Mobile/Tablette -->
+<div id="chat-modal" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.8);flex-direction:column;">
+  <div style="background:var(--bg2);margin:auto;width:100%;max-width:500px;height:80vh;
+    border-radius:16px 16px 0 0;position:absolute;bottom:0;left:0;right:0;display:flex;flex-direction:column;">
+    <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;">
+      <span style="font-family:var(--fh);font-size:11px;letter-spacing:1px;">CHAT EN DIRECT</span>
+      <span id="chat-online-count-m" style="font-size:10px;color:var(--success);">● 0 en ligne</span>
+      <button onclick="closeChatModal()" style="margin-left:auto;background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;">✕</button>
+    </div>
+    <div id="chat-messages-mobile" style="flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;"></div>
+    <div style="padding:10px 12px;border-top:1px solid var(--border);">
+      <div style="display:flex;gap:6px;align-items:center;">
+        <input id="chat-input-mobile" class="inp" placeholder="Message..." style="flex:1;font-size:12px;padding:8px 10px;"
+          onkeydown="if(event.key==='Enter')sendChatMsg()">
+        <button onclick="startVoiceMsg()" id="voice-rec-btn-m" title="Message vocal"
+          style="width:36px;height:36px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);
+          color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </button>
+        <button onclick="startVideoCall()" title="Appel vidéo"
+          style="width:36px;height:36px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);
+          color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        </button>
+        <button onclick="sendChatMsg()"
+          style="width:36px;height:36px;border-radius:8px;background:var(--accent);border:none;
+          color:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Appel vidéo overlay -->
+<div id="video-call-overlay" style="display:none;position:fixed;inset:0;z-index:700;background:#000;flex-direction:column;">
+  <div style="position:relative;flex:1;">
+    <video id="remote-video" autoplay playsinline style="width:100%;height:100%;object-fit:cover;"></video>
+    <video id="local-video" autoplay playsinline muted style="position:absolute;bottom:16px;right:16px;
+      width:120px;height:160px;object-fit:cover;border-radius:12px;border:2px solid var(--accent);"></video>
+    <div style="position:absolute;top:16px;left:16px;font-family:var(--fh);font-size:12px;color:white;
+      background:rgba(0,0,0,.5);padding:6px 12px;border-radius:20px;" id="call-status">Appel en cours...</div>
+  </div>
+  <div style="padding:24px;display:flex;justify-content:center;gap:16px;background:rgba(0,0,0,.8);">
+    <button onclick="toggleMuteCall()" id="mute-btn"
+      style="width:56px;height:56px;border-radius:50%;background:var(--bg3);border:none;color:white;cursor:pointer;font-size:20px;">🎤</button>
+    <button onclick="endCall()"
+      style="width:56px;height:56px;border-radius:50%;background:#e63946;border:none;color:white;cursor:pointer;font-size:20px;">📵</button>
+    <button onclick="toggleCameraCall()" id="cam-btn"
+      style="width:56px;height:56px;border-radius:50%;background:var(--bg3);border:none;color:white;cursor:pointer;font-size:20px;">📷</button>
+  </div>
+</div>
+
 </body>
 </html>
